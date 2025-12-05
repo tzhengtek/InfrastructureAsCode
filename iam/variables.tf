@@ -8,6 +8,11 @@ variable "region" {
   description = "Region for resources"
 }
 
+variable "github_token_secret_name" {
+  type        = string
+  default     = "github-token"
+  description = "Name of the secret in GCP Secret Manager containing the GitHub token"
+}
 // USERS GITHUB // 
 variable "github_admin_users" {
   type        = list(string)
@@ -28,7 +33,6 @@ variable "gcp_iam_members" {
   }
   description = "Map of user emails to their IAM roles"
 }
-
 variable "github_iam_members" {
   type        = map(string)
   default     = {}
