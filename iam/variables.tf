@@ -1,0 +1,36 @@
+variable "project_id" {
+  type        = string
+  description = "Cloud project ID"
+}
+
+variable "region" {
+  type        = string
+  description = "Region for resources"
+}
+
+// USERS GITHUB // 
+variable "github_admin_users" {
+  type        = list(string)
+  default     = []
+  description = "List of GitHub usernames with admin permission"
+}
+
+variable "github_read_users" {
+  type        = list(string)
+  default     = []
+  description = "List of GitHub usernames with read permission"
+}
+
+variable "gcp_iam_members" {
+  type = map(list(string))
+  default = {
+    "jeremie@jjaouen.com" = ["roles/viewer", "roles/viewer"]
+  }
+  description = "Map of user emails to their IAM roles"
+}
+
+variable "github_iam_members" {
+  type        = map(string)
+  default     = {}
+  description = "Map of user emails to their IAM roles"
+}
