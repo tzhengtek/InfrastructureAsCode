@@ -33,6 +33,9 @@ jobs:
           service_account: "github-action-sa@${{ secrets.GCP_PROJECT_ID }}.iam.gserviceaccount.com"
           audience: "https://token.actions.githubusercontent.com"
 
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+
       - name: Init Terraform
         run: terraform init -backend-config=backends/${{ matrix.env }}.config
 
