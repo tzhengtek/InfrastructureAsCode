@@ -1,0 +1,28 @@
+name: Terraform Destroy Deployment
+
+on:
+  workflow_dispatch:
+    inputs:
+      env:
+        description: "Environment (dev/prd)"
+        required: true
+        default: "dev"
+        type: choice
+        options:
+          - dev
+          - prd
+
+jobs:
+  destroy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+
+      - name: Init Terraform
+        run: terraform init -backend-config=backends/${{ inputs.env }}.config
+
+      - name: Terraform Apply (on tag only)
+        run: terraform destroy -auto-approve -var-file=vars/${{ inputs.env }}.tfvars
