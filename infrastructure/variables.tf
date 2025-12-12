@@ -21,3 +21,19 @@ variable "cidr_block" {
 }
 
 
+// OIDC GITHUB  //
+
+variable "github_url" {
+  type    = string
+  default = "https://token.actions.githubusercontent.com"
+}
+
+variable "github_project_id" {
+  type        = string
+  description = "Github Project ID"
+}
+
+variable "github_org" {
+  type        = string
+  description = "GitHub organization allowed to authenticate"
+}
