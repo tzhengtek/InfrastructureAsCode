@@ -20,7 +20,7 @@ jobs:
       GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
     strategy:
       matrix:
-        env: [dev, prd]
+        env: [dev]
     steps:
       - uses: actions/checkout@v3
 
