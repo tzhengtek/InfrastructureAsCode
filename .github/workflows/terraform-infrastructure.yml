@@ -16,6 +16,8 @@ jobs:
     defaults:
       run:
         working-directory: ./infrastructure
+    env:
+      GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
     strategy:
       matrix:
         env: [dev, prd]
@@ -24,6 +26,11 @@ jobs:
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GOOGLE_CREDENTIALS }}
 
       - name: Init Terraform
         run: terraform init -backend-config=backends/${{ matrix.env }}.config
