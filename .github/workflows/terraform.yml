@@ -25,7 +25,7 @@ jobs:
       - name: Init Terraform
         run: terraform init -backend-config=backends/${{ inputs.env }}.config
       - name: Terraform Plan
-        run: terraform plan -var-file=vars/${{ matrix.env }}.tfvars
+        run: terraform plan -var-file=vars/${{ inputs.env }}.tfvars
       - name: Terraform Apply (on tag only)
         # if: startsWith(github.ref, 'refs/tags/')
         run: terraform apply -auto-approve -var-file=vars/${{ inputs.env }}.tfvars
