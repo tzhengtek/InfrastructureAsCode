@@ -18,24 +18,26 @@ jobs:
     defaults:
       run:
         working-directory: ./iam
+    env:
+      GITHUB_TOKEN: ${{ secrets.REPO_TOKEN }}
+      GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-        env:
-          GITHUB_TOKEN: ${{ secrets.REPO_TOKEN }}
-          GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
+
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v2
         with:
           credentials_json: ${{ secrets.GOOGLE_CREDENTIALS }}
+
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
-      - name: Init Terraform
 
-        run: |
-          echo $GITHUB_TOKEN
-          terraform init -backend-config=backends/${{ inputs.env }}.config
+      - name: Init Terraform
+        run: terraform init -backend-config=backends/${{ inputs.env }}.config
+
       - name: Terraform Plan
         run: terraform plan -var-file=vars/${{ inputs.env }}.tfvars
+
       - name: Terraform Apply (on tag only)
         run: terraform apply -auto-approve -var-file=vars/${{ inputs.env }}.tfvars
