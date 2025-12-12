@@ -23,6 +23,11 @@ jobs:
         uses: actions/checkout@v3
         env:
           GITHUB_TOKEN: ${{ secrets.REPO_TOKEN }}
+          GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GOOGLE_CREDENTIALS }}
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
       - name: Init Terraform
