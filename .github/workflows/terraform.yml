@@ -31,7 +31,10 @@ jobs:
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
       - name: Init Terraform
-        run: terraform init -backend-config=backends/${{ inputs.env }}.config
+
+        run: |
+          echo $GITHUB_TOKEN
+          terraform init -backend-config=backends/${{ inputs.env }}.config
       - name: Terraform Plan
         run: terraform plan -var-file=vars/${{ inputs.env }}.tfvars
       - name: Terraform Apply (on tag only)
