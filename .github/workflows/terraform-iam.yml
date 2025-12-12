@@ -49,6 +49,9 @@ jobs:
         working-directory: ./iam
     env:
       GITHUB_TOKEN: ${{ secrets.REPO_TOKEN }}
+    permissions:
+      contents: "read"
+      id-token: "write"
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
