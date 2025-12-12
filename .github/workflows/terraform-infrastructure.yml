@@ -16,8 +16,6 @@ jobs:
     defaults:
       run:
         working-directory: ./infrastructure
-    env:
-      GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
     strategy:
       matrix:
         env: [dev]
