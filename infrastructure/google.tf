@@ -16,8 +16,8 @@ resource "google_iam_workload_identity_pool_provider" "github-provider-oidc" {
     "attribute.owner"      = "assertion.repository_owner"
   }
   oidc {
-    issuer_uri        = var.github_url
-    allowed_audiences = [var.github_url]
+    issuer_uri = var.github_url
+    # allowed_audiences = [var.github_url]
   }
 }
 
@@ -33,7 +33,7 @@ resource "google_service_account_iam_binding" "github_action_binding" {
   role               = "roles/iam.workloadIdentityUser"
 
   members = [
-    "principalSet://iam.googleapis.com/${google_iam_workload_identity_pool.gitlab-pool.name}/attribute.repository_owner/${var.github_org}"
+    "principalSet://iam.googleapis.com/${google_iam_workload_identity_pool.github-action-pool.name}/attribute.repository_owner/${var.github_org}"
   ]
 }
 resource "google_service_account_iam_binding" "github_action_binding" {
@@ -41,7 +41,7 @@ resource "google_service_account_iam_binding" "github_action_binding" {
   role               = "roles/iam.serviceAccountAdmin"
 
   members = [
-    "principalSet://iam.googleapis.com/${google_iam_workload_identity_pool.gitlab-pool.name}/attribute.repository_owner/${var.github_org}"
+    "principalSet://iam.googleapis.com/${google_iam_workload_identity_pool.github-action-pool.name}/attribute.repository_owner/${var.github_org}"
   ]
 }
 
