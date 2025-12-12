@@ -10,7 +10,7 @@ variable "region" {
 
 variable "github_token_secret_name" {
   type        = string
-  default     = "github-token"
+  default     = "repo_token"
   description = "Name of the secret in GCP Secret Manager containing the GitHub token"
 }
 // USERS GITHUB // 
@@ -29,7 +29,7 @@ variable "github_read_users" {
 variable "gcp_iam_members" {
   type = map(list(string))
   default = {
-    "jeremie@jjaouen.com" = ["roles/viewer", "roles/viewer"]
+    "jeremie@jjaouen.com" = ["roles/reader", "roles/viewer"]
   }
   description = "Map of user emails to their IAM roles"
 }
