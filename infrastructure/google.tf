@@ -36,3 +36,12 @@ resource "google_service_account_iam_binding" "github_action_binding" {
     "principalSet://iam.googleapis.com/${google_iam_workload_identity_pool.gitlab-pool.name}/attribute.repository_owner/${var.github_org}"
   ]
 }
+resource "google_service_account_iam_binding" "github_action_binding" {
+  service_account_id = google_service_account.github_action.name
+  role               = "roles/iam.serviceAccountAdmin"
+
+  members = [
+    "principalSet://iam.googleapis.com/${google_iam_workload_identity_pool.gitlab-pool.name}/attribute.repository_owner/${var.github_org}"
+  ]
+}
+
