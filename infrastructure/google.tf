@@ -17,7 +17,7 @@ resource "google_iam_workload_identity_pool_provider" "github-provider-oidc" {
   }
   oidc {
     issuer_uri        = var.github_url
-    allowed_audiences = []
+    allowed_audiences = [var.github_url]
   }
 }
 
