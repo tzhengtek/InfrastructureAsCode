@@ -13,6 +13,9 @@ on:
 jobs:
   terraform:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./infrastructure
     strategy:
       matrix:
         env: [dev, prd]
