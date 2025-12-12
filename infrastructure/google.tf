@@ -28,7 +28,7 @@ resource "google_service_account" "github_action" {
 }
 
 
-resource "google_service_account_iam_binding" "github_action_binding" {
+resource "google_service_account_iam_binding" "github_action_workload_identity" {
   service_account_id = google_service_account.github_action.name
   role               = "roles/iam.workloadIdentityUser"
 
@@ -36,7 +36,7 @@ resource "google_service_account_iam_binding" "github_action_binding" {
     "principalSet://iam.googleapis.com/${google_iam_workload_identity_pool.github-action-pool.name}/attribute.repository_owner/${var.github_org}"
   ]
 }
-resource "google_service_account_iam_binding" "github_action_binding" {
+resource "google_service_account_iam_binding" "github_action_admin" {
   service_account_id = google_service_account.github_action.name
   role               = "roles/iam.serviceAccountAdmin"
 
@@ -44,4 +44,8 @@ resource "google_service_account_iam_binding" "github_action_binding" {
     "principalSet://iam.googleapis.com/${google_iam_workload_identity_pool.github-action-pool.name}/attribute.repository_owner/${var.github_org}"
   ]
 }
-
+resource "google_storage_bucket_iam_member" "terraform_state_access" {
+  bucket = "iac-epitech-storage"
+  role   = "roles/storage.objectAdmin"
+  member = "user:${google_service_account.github_action.account_id}@${var.project_id}.iam.gserviceaccount.com"
+}
