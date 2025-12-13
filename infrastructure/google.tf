@@ -47,9 +47,15 @@ resource "google_service_account_iam_binding" "github_action_admin" {
 data "google_storage_bucket" "terraform_state" {
   name = "iac-epitech-storage"
 }
-
 resource "google_storage_bucket_iam_member" "terraform_state_access" {
   bucket = data.google_storage_bucket.terraform_state.name
   role   = "roles/storage.admin"
   member = "serviceAccount:${google_service_account.github_action.email}"
+}
+
+resource "time_sleep" "wait_for_iam" {
+  depends_on = [
+    google_storage_bucket_iam_member.terraform_state_access
+  ]
+  create_duration = "30s"
 }
