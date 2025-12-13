@@ -43,10 +43,13 @@ resource "google_service_account_iam_binding" "github_action_admin" {
   ]
 }
 
-
+# Reference to existing bucket (or create it if it doesn't exist)
+data "google_storage_bucket" "terraform_state" {
+  name = "iac-epitech-storage"
+}
 
 resource "google_storage_bucket_iam_member" "terraform_state_access" {
-  bucket = "iac-epitech-storage"
-  role   = "roles/storage.objectAdmin"
+  bucket = data.google_storage_bucket.terraform_state.name
+  role   = "roles/storage.admin"
   member = "serviceAccount:${google_service_account.github_action.email}"
 }
