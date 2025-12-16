@@ -21,41 +21,40 @@ resource "google_iam_workload_identity_pool_provider" "github-provider-oidc" {
   }
 }
 
-resource "google_service_account" "github_action" {
-  account_id   = "github-action-sa"
-  display_name = "GitHub Actions Service Account"
-  project      = var.project_id
-}
-resource "google_service_account_iam_binding" "github_action_workload_identity" {
-  service_account_id = google_service_account.github_action.name
-  role               = "roles/iam.workloadIdentityUser"
+# resource "google_service_account" "github_action" {
+#   account_id   = "github-action-sa"
+#   display_name = "GitHub Actions Service Account"
+#   project      = var.project_id
+# }
+# resource "google_service_account_iam_binding" "github_action_workload_identity" {
+#   service_account_id = google_service_account.github_action.name
+#   role               = "roles/iam.workloadIdentityUser"
 
-  members = [
-    "principalSet://iam.googleapis.com/${google_iam_workload_identity_pool.github-action-pool.name}/attribute.repository_owner/${var.github_org}"
-  ]
-}
-resource "google_service_account_iam_binding" "github_action_admin" {
-  service_account_id = google_service_account.github_action.name
-  role               = "roles/iam.serviceAccountAdmin"
+#   members = [
+#     "principalSet://iam.googleapis.com/${google_iam_workload_identity_pool.github-action-pool.name}/attribute.repository_owner/${var.github_org}"
+#   ]
+# }
+# resource "google_service_account_iam_binding" "github_action_admin" {
+#   service_account_id = google_service_account.github_action.name
+#   role               = "roles/iam.serviceAccountAdmin"
 
-  members = [
-    "principalSet://iam.googleapis.com/${google_iam_workload_identity_pool.github-action-pool.name}/attribute.repository_owner/${var.github_org}"
-  ]
-}
+#   members = [
+#     "principalSet://iam.googleapis.com/${google_iam_workload_identity_pool.github-action-pool.name}/attribute.repository_owner/${var.github_org}"
+#   ]
+# }
 
-# Reference to existing bucket (or create it if it doesn't exist)
-data "google_storage_bucket" "terraform_state" {
-  name = "iac-epitech-storage"
-}
-resource "google_storage_bucket_iam_member" "terraform_state_access" {
-  bucket = data.google_storage_bucket.terraform_state.name
-  role   = "roles/storage.admin"
-  member = "serviceAccount:${google_service_account.github_action.email}"
-}
+# data "google_storage_bucket" "terraform_state" {
+#   name = "iac-epitech-storage"
+# }
+# resource "google_storage_bucket_iam_member" "terraform_state_access" {
+#   bucket = data.google_storage_bucket.terraform_state.name
+#   role   = "roles/storage.admin"
+#   member = "serviceAccount:${google_service_account.github_action.email}"
+# }
 
-resource "time_sleep" "wait_for_iam" {
-  depends_on = [
-    google_storage_bucket_iam_member.terraform_state_access
-  ]
-  create_duration = "30s"
-}
+# resource "time_sleep" "wait_for_iam" {
+#   depends_on = [
+#     google_storage_bucket_iam_member.terraform_state_access
+#   ]
+#   create_duration = "30s"
+# }
