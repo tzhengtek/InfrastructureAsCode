@@ -23,7 +23,7 @@ variable "cidr_block" {
 variable "db_name" {
   type        = string
   description = "Name of the database"
-  default     = "app_db"
+  default     = "app-db"
 }
 
 variable "db_user" {
