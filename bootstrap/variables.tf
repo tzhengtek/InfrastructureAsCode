@@ -35,3 +35,33 @@ variable "github_action_sa_roles" {
   default     = []
   description = "List of GitHub Actions IAM Policies"
 }
+
+variable "jwt_secret" {
+  type        = string
+  description = "JWT Secret for token generation"
+  sensitive   = true
+}
+
+variable "ssl_cert" {
+  type        = string
+  description = "ssl certificate"
+  sensitive   = true
+}
+
+variable "ssl_key" {
+  type        = string
+  description = "ssl certificate"
+  sensitive   = true
+}
+
+variable "db_user" {
+  type        = string
+  description = "Database user name"
+  sensitive   = true
+}
+
+variable "db_pwd" {
+  type        = string
+  description = "Database user name"
+  sensitive   = true
+}
