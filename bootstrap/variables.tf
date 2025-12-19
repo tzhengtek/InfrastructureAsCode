@@ -65,3 +65,8 @@ variable "db_pwd" {
   description = "Database user name"
   sensitive   = true
 }
+
+variable "vpc_name" {
+  type        = string
+  description = "Name of the VPC"
+}
