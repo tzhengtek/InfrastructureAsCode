@@ -21,6 +21,47 @@ resource "google_secret_manager_secret_version" "jwt_secret" {
   secret_data = var.jwt_secret
 }
 
+
+resource "google_secret_manager_secret" "ssl_cert" {
+  secret_id = "ssl-cert-id"
+
+  replication {
+    auto {}
+  }
+  labels = {
+    managed_by = "terraform"
+    source     = "github-secrets"
+    app        = "backend"
+  }
+  depends_on = [google_project_service.secretmanager]
+}
+
+resource "google_secret_manager_secret_version" "ssl_cert" {
+  secret      = google_secret_manager_secret.ssl_cert.id
+  secret_data = var.ssl_cert
+}
+
+
+resource "google_secret_manager_secret" "ssl_key" {
+  secret_id = "ssl-key-id"
+
+  replication {
+    auto {}
+  }
+  labels = {
+    managed_by = "terraform"
+    source     = "github-secrets"
+    app        = "backend"
+  }
+  depends_on = [google_project_service.secretmanager]
+}
+
+resource "google_secret_manager_secret_version" "ssl_key" {
+  secret      = google_secret_manager_secret.ssl_key.id
+  secret_data = var.ssl_key
+}
+
+
 // DATABASE //
 
 resource "google_secret_manager_secret" "db_connection" {
