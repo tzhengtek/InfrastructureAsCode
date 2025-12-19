@@ -34,8 +34,9 @@ resource "google_service_account_iam_binding" "github_action_wif_user" {
   ]
 }
 
-resource "google_project_iam_member" "github_action_storage_admin" {
-  project = var.project_id
-  role    = "roles/storage.admin"
-  member  = "serviceAccount:${google_service_account.github_action.email}"
+resource "google_project_iam_member" "github_action_sa_roles" {
+  for_each = toset(var.github_action_sa_roles)
+  project  = var.project_id
+  role     = each.key
+  member   = "serviceAccount:${google_service_account.github_action.email}"
 }
