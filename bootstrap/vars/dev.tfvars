@@ -1,0 +1,5 @@
+project_id        = "iac-epitech-dev"
+region            = "europe-west1"
+github_project_id = "1106034359"
+github_org        = "tzhengtek"
+github_repo       = "InfrastructureAsCode"
