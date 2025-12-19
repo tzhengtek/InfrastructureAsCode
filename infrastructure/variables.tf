@@ -47,13 +47,13 @@ variable "jwt_secret" {
   sensitive   = true
 }
 variable "ssl_cert" {
-  type = string
+  type        = string
   description = "ssl certificate"
-  sensitive = true
+  sensitive   = true
 }
 variable "ssl_key" {
-  type = string
+  type        = string
   description = "ssl certificate"
-  sensitive = true
+  sensitive   = true
 }
 

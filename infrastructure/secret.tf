@@ -1,5 +1,5 @@
 resource "google_project_service" "secretmanager" {
-  service            = "secretmanager.googleapis.com"
+  service = "secretmanager.googleapis.com"
 }
 
 resource "google_secret_manager_secret" "jwt_secret" {
