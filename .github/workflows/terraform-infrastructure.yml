@@ -9,31 +9,49 @@ on:
   pull_request:
     branches:
       - main
+  workflow_dispatch:
+    inputs:
+      env:
+        description: "Environment (dev/prd)"
+        required: true
+        default: "dev"
+        type: choice
+        options:
+          - dev
+          - prd
 
 jobs:
-  terraform:
+  terraform-infrastructure:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
     defaults:
       run:
         working-directory: ./infrastructure
-    env:
-      GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
     strategy:
       matrix:
         env: [dev]
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v3
+        with:
+          workload_identity_provider: "projects/${{ secrets.GCP_PROJECT_NUMBER }}/locations/global/workloadIdentityPools/github-action-wif-pool/providers/github-oidc"
+          service_account: "github-action-sa@${{ secrets.GCP_PROJECT_ID }}.iam.gserviceaccount.com"
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
 
-      - name: Authenticate to Google Cloud
-        uses: google-github-actions/auth@v2
-        with:
-          credentials_json: ${{ secrets.GOOGLE_CREDENTIALS }}
-
       - name: Init Terraform
         run: terraform init -backend-config=backends/${{ matrix.env }}.config
+
+      - name: Terraform Fmt & Validate
+        run: |
+          terraform fmt -check -recursive
+          terraform validate
 
       - name: Terraform Plan
         run: terraform plan -var-file=vars/${{ matrix.env }}.tfvars

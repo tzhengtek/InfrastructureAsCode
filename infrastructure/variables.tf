@@ -8,7 +8,6 @@ variable "region" {
   description = "Region for resources"
 }
 
-
 // VPC // 
 variable "vpc_name" {
   type        = string
@@ -19,5 +18,3 @@ variable "cidr_block" {
   type        = string
   description = "CIDR block for the VPC"
 }
-
-

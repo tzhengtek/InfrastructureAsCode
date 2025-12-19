@@ -15,49 +15,24 @@ on:
 jobs:
   terraform-iam:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
     defaults:
       run:
         working-directory: ./iam
     env:
       GITHUB_TOKEN: ${{ secrets.REPO_TOKEN }}
-      GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Authenticate to Google Cloud
-        uses: google-github-actions/auth@v2
+        uses: google-github-actions/auth@v3
         with:
-          credentials_json: ${{ secrets.GOOGLE_CREDENTIALS }}
-
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v2
-
-      - name: Init Terraform
-        run: terraform init -backend-config=backends/${{ inputs.env }}.config
-
-      - name: Terraform Plan
-        run: terraform plan -var-file=vars/${{ inputs.env }}.tfvars
-
-      - name: Terraform Apply (on tag only)
-        run: terraform apply -auto-approve -var-file=vars/${{ inputs.env }}.tfvars
-
-  terraform-infrastructure:
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./iam
-    env:
-      GITHUB_TOKEN: ${{ secrets.REPO_TOKEN }}
-      GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Authenticate to Google Cloud
-        uses: google-github-actions/auth@v2
-        with:
-          credentials_json: ${{ secrets.GOOGLE_CREDENTIALS }}
+          workload_identity_provider: "projects/${{ secrets.GCP_PROJECT_NUMBER }}/locations/global/workloadIdentityPools/github-action-pool/providers/github-oidc"
+          service_account: "github-action-sa@${{ secrets.GCP_PROJECT_ID }}.iam.gserviceaccount.com"
+          audience: "https://token.actions.githubusercontent.com"
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
