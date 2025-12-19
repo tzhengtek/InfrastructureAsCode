@@ -9,6 +9,16 @@ on:
   pull_request:
     branches:
       - main
+  workflow_dispatch:
+    inputs:
+      env:
+        description: "Environment (dev/prd)"
+        required: true
+        default: "dev"
+        type: choice
+        options:
+          - dev
+          - prd
 
 jobs:
   terraform-infrastructure:
