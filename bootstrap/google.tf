@@ -40,10 +40,3 @@ resource "google_project_iam_member" "github_action_storage_admin" {
   role     = each.key
   member   = "serviceAccount:${google_service_account.github_action.email}"
 }
-
-resource "google_project_iam_member" "github_action_storage_admin" {
-  project = var.project_id
-  role    = "roles/compute.networkAdmin"
-  member  = "serviceAccount:${google_service_account.github_action.email}"
-}
-
