@@ -2,12 +2,16 @@ resource "random_id" "db_postgree" {
   byte_length = 4
 }
 
+data "google_service_networking_connection" "private_vpc_connection" {
+  network = google_compute_network.vpc.id
+}
+
 resource "google_sql_database_instance" "database_instance" {
   name             = "${var.db_name}-db-${random_id.db_postgree.hex}"
   database_version = "POSTGRES_15"
   region           = var.region
 
-  depends_on = [google_service_networking_connection.private_vpc_connection]
+  depends_on = [data.google_service_networking_connection.private_vpc_connection]
   settings {
     tier              = "db-f1-micro"
     availability_type = "ZONAL"
