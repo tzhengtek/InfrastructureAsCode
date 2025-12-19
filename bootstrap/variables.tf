@@ -29,3 +29,9 @@ variable "github_repo" {
   type        = string
   description = "Github Repository"
 }
+
+variable "github_action_sa_roles" {
+  type        = list(string)
+  default     = []
+  description = "List of GitHub Actions IAM Policies"
+}
