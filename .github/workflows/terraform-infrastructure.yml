@@ -41,17 +41,17 @@ jobs:
       run: terraform plan -var-file=vars/${{ matrix.env }}.tfvars
       env:
         TF_VAR_jwt_secret: ${{ secrets.JWT_SECRET }}
-        TF_VAR_ssl_cert: ${{ secret.SSL_CERT }}
-        TF_VAR_ssl_key: ${{ secret.SSL_KEY }}
-        TF_VAR_db_pwd: ${{ secret.DB_PWD }}
-        TF_VAR_db_user: ${{ secret.DB_USER }}
+        TF_VAR_ssl_cert: ${{ secrets.SSL_CERT }}
+        TF_VAR_ssl_key: ${{ secrets.SSL_KEY }}
+        TF_VAR_db_pwd: ${{ secrets.DB_PWD }}
+        TF_VAR_db_user: ${{ secrets.DB_USER }}
 
     - name: Terraform Apply (on tag only)
       if: startsWith(github.ref, 'refs/tags/')
       run: terraform apply -auto-approve -var-file=vars/${{ matrix.env }}.tfvars
       env:
         TF_VAR_jwt_secret: ${{ secrets.JWT_SECRET }}
-        TF_VAR_ssl_cert: ${{ secret.SSL_CERT }}
-        TF_VAR_ssl_key: ${{ secret.SSL_KEY }}
-        TF_VAR_db_pwd: ${{ secret.DB_PWD }}
-        TF_VAR_db_user: ${{ secret.DB_USER }}
+        TF_VAR_ssl_cert: ${{ secrets.SSL_CERT }}
+        TF_VAR_ssl_key: ${{ secrets.SSL_KEY }}
+        TF_VAR_db_pwd: ${{ secrets.DB_PWD }}
+        TF_VAR_db_user: ${{ secrets.DB_USER }}
