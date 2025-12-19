@@ -6,23 +6,11 @@ pip install -r requirements.txt
 ## Configuration
 
 Variables d'environnement :
-- `JWT_SECRET` : Secret pour valider les tokens JWT (défaut: `change-me-in-production`)
+- `JWT_SECRET` : Secret pour valider les tokens JWT (défaut: `.env`)
 - `PORT` : Port d'écoute (défaut: `8080`)
 - `HOST` : Host d'écoute (défaut: `0.0.0.0`)
 - `SSL_CERT_PATH` : Chemin vers le certificat SSL (défaut: `cert.pem`)
 - `SSL_KEY_PATH` : Chemin vers la clé SSL (défaut: `key.pem`)
-
-## Exécution
-
-```bash
-# Sans HTTPS
-PYTHONPATH=. python -m app
-
-# Avec HTTPS (si certificats présents)
-export SSL_CERT_PATH=cert.pem
-export SSL_KEY_PATH=key.pem
-PYTHONPATH=. python -m app
-```
 
 ## Endpoints
 
@@ -130,4 +118,11 @@ curl -X POST http://localhost:8080/tasks \
 curl -X GET http://localhost:8080/tasks \
   -H "Authorization: Bearer $TOKEN" \
   -H "correlation_id: test-124"
+
+# With https
+curl --cacert ./cert.pem -X POST https://localhost:8080/tasks \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "correlation_id: test-123" \
+  -H "Content-Type: application/json" \
+  -d '{ "title":"Test Task", "content":"Test content", "due_date":"2025-12-31", "request_timestamp":"2025-01-01T10:00:00Z" }'
 ```
