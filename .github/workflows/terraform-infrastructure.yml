@@ -3,12 +3,12 @@ name: Terraform Infrastructure Deployment
 on:
   push:
     branches:
-    - main
+      - main
     tags:
-    - "v*"
+      - "v*"
   pull_request:
     branches:
-    - main
+      - main
   workflow_dispatch:
     inputs:
       env:
@@ -17,12 +17,19 @@ on:
         default: "dev"
         type: choice
         options:
-        - dev
-        - prd
+          - dev
+          - prd
+      runner_label:
+        description: "Runner label"
+        required: false
+        default: linux
+        type: choice
+        options:
+          - linux
 
 jobs:
   terraform-infrastructure:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, "${{ inputs.runner_label }}"]
     permissions:
       contents: read
       id-token: write
@@ -31,43 +38,43 @@ jobs:
         working-directory: ./infrastructure
     strategy:
       matrix:
-        env: [ dev ]
+        env: [dev]
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Authenticate to Google Cloud
-      uses: google-github-actions/auth@v3
-      with:
-        workload_identity_provider: "projects/${{ secrets.GCP_PROJECT_NUMBER }}/locations/global/workloadIdentityPools/github-action-wif-pool/providers/github-oidc"
-        service_account: "github-action-sa@${{ secrets.GCP_PROJECT_ID }}.iam.gserviceaccount.com"
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v3
+        with:
+          workload_identity_provider: "projects/${{ secrets.GCP_PROJECT_NUMBER }}/locations/global/workloadIdentityPools/github-action-wif-pool/providers/github-oidc"
+          service_account: "github-action-sa@${{ secrets.GCP_PROJECT_ID }}.iam.gserviceaccount.com"
 
-    - name: Setup Terraform
-      uses: hashicorp/setup-terraform@v2
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
 
-    - name: Init Terraform
-      run: terraform init -backend-config=backends/${{ matrix.env }}.config
+      - name: Init Terraform
+        run: terraform init -backend-config=backends/${{ matrix.env }}.config
 
-    - name: Terraform Fmt & Validate
-      run: |
-        terraform fmt -check -recursive
-        terraform validate
+      - name: Terraform Fmt & Validate
+        run: |
+          terraform fmt -check -recursive
+          terraform validate
 
-    - name: Terraform Plan
-      run: terraform plan -var-file=vars/${{ matrix.env }}.tfvars
-      env:
-        TF_VAR_jwt_secret: ${{ secrets.JWT_SECRET }}
-        TF_VAR_ssl_cert: ${{ secrets.SSL_CERT }}
-        TF_VAR_ssl_key: ${{ secrets.SSL_KEY }}
-        TF_VAR_db_pwd: ${{ secrets.DB_PWD }}
-        TF_VAR_db_user: ${{ secrets.DB_USER }}
+      - name: Terraform Plan
+        run: terraform plan -var-file=vars/${{ matrix.env }}.tfvars
+        env:
+          TF_VAR_jwt_secret: ${{ secrets.JWT_SECRET }}
+          TF_VAR_ssl_cert: ${{ secrets.SSL_CERT }}
+          TF_VAR_ssl_key: ${{ secrets.SSL_KEY }}
+          TF_VAR_db_pwd: ${{ secrets.DB_PWD }}
+          TF_VAR_db_user: ${{ secrets.DB_USER }}
 
-    - name: Terraform Apply (on tag only)
-      if: startsWith(github.ref, 'refs/tags/')
-      run: terraform apply -auto-approve -var-file=vars/${{ matrix.env }}.tfvars
-      env:
-        TF_VAR_jwt_secret: ${{ secrets.JWT_SECRET }}
-        TF_VAR_ssl_cert: ${{ secrets.SSL_CERT }}
-        TF_VAR_ssl_key: ${{ secrets.SSL_KEY }}
-        TF_VAR_db_pwd: ${{ secrets.DB_PWD }}
-        TF_VAR_db_user: ${{ secrets.DB_USER }}
+      - name: Terraform Apply (on tag only)
+        if: startsWith(github.ref, 'refs/tags/')
+        run: terraform apply -auto-approve -var-file=vars/${{ matrix.env }}.tfvars
+        env:
+          TF_VAR_jwt_secret: ${{ secrets.JWT_SECRET }}
+          TF_VAR_ssl_cert: ${{ secrets.SSL_CERT }}
+          TF_VAR_ssl_key: ${{ secrets.SSL_KEY }}
+          TF_VAR_db_pwd: ${{ secrets.DB_PWD }}
+          TF_VAR_db_user: ${{ secrets.DB_USER }}

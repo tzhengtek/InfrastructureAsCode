@@ -56,4 +56,3 @@ variable "ssl_key" {
   description = "ssl certificate"
   sensitive   = true
 }
-
