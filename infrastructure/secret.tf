@@ -111,7 +111,7 @@ resource "google_secret_manager_secret" "github_app_id" {
 
 resource "google_secret_manager_secret_version" "github_app_id" {
   secret      = google_secret_manager_secret.github_app_id.id
-  secret_data = var.github_app_id
+  secret_data = var.app_id
 }
 
 
@@ -131,7 +131,7 @@ resource "google_secret_manager_secret" "github_installation_id" {
 
 resource "google_secret_manager_secret_version" "github_installation_id" {
   secret      = google_secret_manager_secret.github_installation_id.id
-  secret_data = var.github_installation_id
+  secret_data = var.app_installation_id
 }
 
 
@@ -151,5 +151,5 @@ resource "google_secret_manager_secret" "github_private_key" {
 
 resource "google_secret_manager_secret_version" "github_private_key" {
   secret      = google_secret_manager_secret.github_private_key.id
-  secret_data = var.github_private_key
+  secret_data = var.app_private_key
 }

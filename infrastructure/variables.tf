@@ -56,19 +56,19 @@ variable "ssl_key" {
   description = "ssl certificate"
   sensitive   = true
 }
-variable "github_app_id" {
+variable "app_id" {
   type        = string
   description = "github app id"
   sensitive   = true
 }
 
-variable "github_installation_id" {
+variable "app_installation_id" {
   type        = string
   description = "github installation id"
   sensitive   = true
 }
 
-variable "github_private_key" {
+variable "app_private_key" {
   type        = string
   description = "github installation id"
   sensitive   = true
