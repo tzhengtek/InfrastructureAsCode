@@ -29,7 +29,7 @@ on:
 
 jobs:
   terraform-infrastructure:
-    runs-on: ["${{ inputs.runner_label }}"]
+    runs-on: [ubuntu-latest]
     permissions:
       contents: read
       id-token: write
