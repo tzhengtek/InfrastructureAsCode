@@ -13,7 +13,12 @@ variable "gke_num_nodes" {
   description = "number of gke nodes"
 }
 
-variable "runner_cluster_name" {
+variable "cluster_name" {
+  default     = "self-hosted"
+  description = "Runner Kubernetes cluster"
+}
+
+variable "arc_runner_name" {
   default     = "self-hosted"
   description = "Runner Kubernetes cluster"
 }

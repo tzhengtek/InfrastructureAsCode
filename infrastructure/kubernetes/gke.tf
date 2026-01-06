@@ -13,7 +13,7 @@ resource "google_service_account" "default" {
 }
 
 resource "google_container_cluster" "primary" {
-  name     = var.runner_cluster_name
+  name     = var.cluster_name
   location = var.zone
 
   remove_default_node_pool = true
