@@ -8,6 +8,11 @@ variable "region" {
   description = "Region for resources"
 }
 
+variable "zone" {
+  type        = string
+  description = "Zone for resources"
+}
+
 // VPC //
 variable "vpc_name" {
   type        = string
