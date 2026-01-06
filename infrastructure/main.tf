@@ -12,5 +12,6 @@ terraform {
     kubernetes = {
       source = "hashicorp/kubernetes"
     }
-}
+  }
 
+}
