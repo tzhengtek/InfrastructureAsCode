@@ -29,20 +29,20 @@ data "google_secret_manager_secret_version" "github_app_private_key" {
 #   }
 #   depends_on = [google_container_cluster.primary, google_container_node_pool.primary_nodes]
 # }
-resource "kubernetes_secret_v1" "github_creds" {
-  metadata {
-    name      = "github-app-creds"
-    namespace = kubernetes_namespace_v1.arc_runners.metadata[0].name
-  }
+# resource "kubernetes_secret_v1" "github_creds" {
+#   metadata {
+#     name      = "github-app-creds"
+#     namespace = kubernetes_namespace_v1.arc_runners.metadata[0].name
+#   }
 
-  data = {
-    github_app_id              = data.google_secret_manager_secret_version.github_app_id.secret_data
-    github_app_installation_id = data.google_secret_manager_secret_version.github_app_installation_id.secret_data
-    github_app_private_key     = data.google_secret_manager_secret_version.github_app_private_key.secret_data
-  }
+#   data = {
+#     github_app_id              = data.google_secret_manager_secret_version.github_app_id.secret_data
+#     github_app_installation_id = data.google_secret_manager_secret_version.github_app_installation_id.secret_data
+#     github_app_private_key     = data.google_secret_manager_secret_version.github_app_private_key.secret_data
+#   }
 
-  type = "Opaque"
-}
+#   type = "Opaque"
+# }
 
 # # --- ARC Controller ---
 # resource "helm_release" "arc_controller" {
