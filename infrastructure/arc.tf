@@ -1,8 +1,5 @@
 # --- Variables ---
-variable "github_config_url" {
-  type        = string
-  description = "URL of the repo or org: https://github.com/my-org/my-repo"
-}
+
 
 # --- GCP Secret Manager Data Sources ---
 # These secrets must be pre-created in GCP Secret Manager

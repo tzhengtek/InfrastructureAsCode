@@ -43,6 +43,13 @@ variable "db_pwd" {
   sensitive   = true
 }
 
+// 
+
+variable "github_config_url" {
+  type        = string
+  description = "URL of the repo or org: https://github.com/my-org/my-repo"
+}
+
 // //
 // APP SECRET //
 
