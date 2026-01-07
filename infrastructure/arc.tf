@@ -73,13 +73,9 @@ resource "helm_release" "arc_runner_set" {
     }
   ]
 
-
-  # Optional: Configure the runner specs (image, dind, etc.)
-  # This enables Docker-in-Docker so you can run 'docker' commands in your CI
-  # set {
-  #   name  = "containerMode.type"
-  #   value = "dind"
-  # }
-
-  depends_on = [helm_release.arc_controller]
+  depends_on = [
+    google_container_node_pool.primary_nodes, # <--- WAIT FOR NODES, NOT JUST CLUSTER
+    google_service_account.default,
+    helm_release.arc_controller # <--- Wait for SA to be ready
+  ]
 }
