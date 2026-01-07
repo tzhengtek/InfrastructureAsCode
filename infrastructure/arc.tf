@@ -20,15 +20,15 @@ resource "kubernetes_namespace_v1" "arc_system" {
   metadata {
     name = "arc-system"
   }
+  depends_on = [google_container_cluster.primary, google_container_node_pool.primary_nodes]
 }
 
 resource "kubernetes_namespace_v1" "arc_runners" {
   metadata {
     name = "arc-runners"
   }
+  depends_on = [google_container_cluster.primary, google_container_node_pool.primary_nodes]
 }
-
-# --- Kubernetes Secret for GitHub Auth (populated from GCP Secret Manager) ---
 resource "kubernetes_secret_v1" "github_creds" {
   metadata {
     name      = "github-app-creds"
@@ -61,7 +61,6 @@ resource "helm_release" "arc_runner_set" {
   version    = "0.9.3"
   namespace  = kubernetes_namespace_v1.arc_runners.metadata[0].name
 
-  # Point to the secret we created above
   set = [
     {
       name  = "githubConfigSecret"
@@ -74,8 +73,8 @@ resource "helm_release" "arc_runner_set" {
   ]
 
   depends_on = [
-    google_container_node_pool.primary_nodes, # <--- WAIT FOR NODES, NOT JUST CLUSTER
+    google_container_node_pool.primary_nodes,
     google_service_account.default,
-    helm_release.arc_controller # <--- Wait for SA to be ready
+    helm_release.arc_controller
   ]
 }
