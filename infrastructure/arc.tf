@@ -15,20 +15,20 @@ data "google_secret_manager_secret_version" "github_app_private_key" {
   secret = "github-app-private-key"
 }
 
-# --- Namespace ---
-resource "kubernetes_namespace_v1" "arc_system" {
-  metadata {
-    name = "arc-system"
-  }
-  depends_on = [google_container_cluster.primary, google_container_node_pool.primary_nodes]
-}
+# # --- Namespace ---
+# resource "kubernetes_namespace_v1" "arc_system" {
+#   metadata {
+#     name = "arc-system"
+#   }
+#   depends_on = [google_container_cluster.primary, google_container_node_pool.primary_nodes]
+# }
 
-resource "kubernetes_namespace_v1" "arc_runners" {
-  metadata {
-    name = "arc-runners"
-  }
-  depends_on = [google_container_cluster.primary, google_container_node_pool.primary_nodes]
-}
+# resource "kubernetes_namespace_v1" "arc_runners" {
+#   metadata {
+#     name = "arc-runners"
+#   }
+#   depends_on = [google_container_cluster.primary, google_container_node_pool.primary_nodes]
+# }
 resource "kubernetes_secret_v1" "github_creds" {
   metadata {
     name      = "github-app-creds"
@@ -44,14 +44,14 @@ resource "kubernetes_secret_v1" "github_creds" {
   type = "Opaque"
 }
 
-# --- ARC Controller ---
-resource "helm_release" "arc_controller" {
-  name       = "arc-controller"
-  repository = "oci://ghcr.io/actions/actions-runner-controller-charts"
-  chart      = "gha-runner-scale-set-controller"
-  version    = "0.9.3"
-  namespace  = kubernetes_namespace_v1.arc_system.metadata[0].name
-}
+# # --- ARC Controller ---
+# resource "helm_release" "arc_controller" {
+#   name       = "arc-controller"
+#   repository = "oci://ghcr.io/actions/actions-runner-controller-charts"
+#   chart      = "gha-runner-scale-set-controller"
+#   version    = "0.9.3"
+#   namespace  = kubernetes_namespace_v1.arc_system.metadata[0].name
+# }
 
 # --- Runner Scale Set ---
 resource "helm_release" "arc_runner_set" {
