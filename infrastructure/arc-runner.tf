@@ -1,5 +1,5 @@
 # 1. Create a namespace for the runners
-resource "kubernetes_namespace" "arc_runners" {
+resource "kubernetes_namespace_v1" "arc_runners" {
   metadata {
     name = "arc-runners"
   }
@@ -10,10 +10,10 @@ data "google_secret_manager_secret_version" "github_token" {
   version = "latest"
 }
 
-resource "kubernetes_secret" "github_secret" {
+resource "kubernetes_secret_v1" "github_secret" {
   metadata {
     name      = "github-secret"
-    namespace = kubernetes_namespace.arc_runners.metadata[0].name
+    namespace = kubernetes_namespace_v1.arc_runners.metadata[0].name
   }
 
   data = {
@@ -26,7 +26,7 @@ resource "helm_release" "arc_runner_set" {
   repository = "oci://ghcr.io/actions/actions-runner-controller-charts"
   chart      = "gha-runner-scale-set"
   version    = "0.9.0"
-  namespace  = kubernetes_namespace.arc_runners.metadata[0].name
+  namespace  = kubernetes_namespace_v1.arc_runners.metadata[0].name
 
   depends_on = [helm_release.arc_controller]
 
@@ -38,6 +38,6 @@ resource "helm_release" "arc_runner_set" {
 
     {
       name  = "githubConfigSecret"
-      value = kubernetes_secret.github_secret.metadata[0].name
+      value = kubernetes_secret_v1.github_secret.metadata[0].name
   }]
 }
