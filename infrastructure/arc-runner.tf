@@ -5,7 +5,7 @@ resource "kubernetes_namespace_v1" "arc_runners" {
   }
 }
 
-data "google_secret_manager_secret_version" "github_token" {
+data "google_secret_manager_secret_version" "github_repo_token" {
   secret  = var.github_repo_token
   version = "latest"
 }
