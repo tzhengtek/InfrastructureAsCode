@@ -153,3 +153,23 @@ resource "google_secret_manager_secret_version" "github_private_key" {
   secret      = google_secret_manager_secret.github_private_key.id
   secret_data = var.app_private_key
 }
+
+
+resource "google_secret_manager_secret" "github_repo_token" {
+  secret_id = "github-repo-token"
+
+  replication {
+    auto {}
+  }
+  labels = {
+    managed_by = "terraform"
+    source     = "github-secrets"
+    app        = "backend"
+  }
+  depends_on = [google_project_service.secretmanager]
+}
+
+resource "google_secret_manager_secret_version" "github_repo_token" {
+  secret      = google_secret_manager_secret.github_private_key.id
+  secret_data = var.github_repo_token
+}

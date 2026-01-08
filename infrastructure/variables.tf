@@ -82,7 +82,15 @@ variable "app_installation_id" {
 
 variable "app_private_key" {
   type        = string
-  description = "github installation id"
+  description = "github private key"
+  sensitive   = true
+}
+
+// REPO GITHUB
+
+variable "github_repo_token" {
+  type        = string
+  description = "github repo token"
   sensitive   = true
 }
 
