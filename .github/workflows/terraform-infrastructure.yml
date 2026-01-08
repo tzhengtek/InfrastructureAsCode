@@ -53,7 +53,7 @@ jobs:
         uses: hashicorp/setup-terraform@v2
 
       - name: Init Terraform
-        run: terraform init -backend-config=backends/${{ matrix.env }}.config
+        run: terraform init -upgrade -backend-config=backends/${{ matrix.env }}.config
 
       - name: Terraform Fmt & Validate
         run: |
