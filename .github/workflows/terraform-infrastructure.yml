@@ -50,7 +50,7 @@ jobs:
           service_account: "github-action-sa@${{ secrets.GCP_PROJECT_ID }}.iam.gserviceaccount.com"
 
       - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v2
+        uses: hashicorp/setup-terraform@v3
 
       - name: Init Terraform
         run: terraform init -upgrade -backend-config=backends/${{ matrix.env }}.config
