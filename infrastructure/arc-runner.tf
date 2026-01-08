@@ -30,14 +30,13 @@ resource "helm_release" "arc_runner_set" {
 
   depends_on = [helm_release.arc_controller]
 
-  set = [
-    {
-      name  = "githubConfigUrl"
-      value = var.github_config_url
-    },
+  set {
+    name  = "githubConfigUrl"
+    value = var.github_config_url
+  }
 
-    {
-      name  = "githubConfigSecret"
-      value = kubernetes_secret_v1.github_secret.metadata[0].name
-  }]
+  set {
+    name  = "githubConfigSecret"
+    value = kubernetes_secret_v1.github_secret.metadata[0].name
+  }
 }
