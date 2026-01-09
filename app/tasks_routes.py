@@ -18,7 +18,6 @@ def validate_task_data(data, require_all=False):
         if field not in data or not data[field]:
             errors.append(f"Missing required field: {field}")
 
-    # due_date format
     if 'due_date' in data and data['due_date']:
         try:
             from datetime import datetime
@@ -136,14 +135,17 @@ def update_task(task_id):
 
         task = tasks_storage[task_id]
         current_timestamp = parse_request_timestamp(task['request_timestamp'])
-        if current_timestamp >= req_dt:
-            logger.info(f"[{correlation_id}] Ignoring out-of-order request for task {task_id}")
-            return jsonify({
-                'error': 'Request timestamp is older than current task timestamp',
-                'current_timestamp': task['request_timestamp'],
-                'request_timestamp': data['request_timestamp']
-            }), StatusCode.CONFLICT
+        
+        # check last correlation if new older than last -> Conflict
+        # if current_timestamp >= req_dt:
+        #     logger.info(f"[{correlation_id}] Ignoring out-of-order request for task {task_id}")
+        #     return jsonify({
+        #         'error': 'Request timestamp is older than current task timestamp',
+        #         'current_timestamp': task['request_timestamp'],
+        #         'request_timestamp': data['request_timestamp']
+        #     }), StatusCode.CONFLICT
 
+        
         # update fields
         if 'title' in data:
             task['title'] = data['title']

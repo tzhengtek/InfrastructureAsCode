@@ -3,7 +3,7 @@ resource "random_id" "db_postgree" {
 }
 
 resource "google_sql_database_instance" "database_instance" {
-  name             = "${var.db_name}-db-${random_id.db_postgree.hex}"
+  name             = "${var.db_name}-${random_id.db_postgree.hex}"
   database_version = "POSTGRES_15"
   region           = var.region
 

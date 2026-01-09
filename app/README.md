@@ -3,15 +3,6 @@
 ```bash
 pip install -r requirements.txt
 ```
-## Configuration
-
-Variables d'environnement :
-- `JWT_SECRET` : Secret pour valider les tokens JWT (défaut: `.env`)
-- `PORT` : Port d'écoute (défaut: `8080`)
-- `HOST` : Host d'écoute (défaut: `0.0.0.0`)
-- `SSL_CERT_PATH` : Chemin vers le certificat SSL (défaut: `cert.pem`)
-- `SSL_KEY_PATH` : Chemin vers la clé SSL (défaut: `key.pem`)
-
 ## Endpoints
 
 ### POST /tasks
