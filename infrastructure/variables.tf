@@ -68,23 +68,6 @@ variable "ssl_key" {
   description = "ssl certificate"
   sensitive   = true
 }
-variable "app_id" {
-  type        = string
-  description = "github app id"
-  sensitive   = true
-}
-
-variable "app_installation_id" {
-  type        = string
-  description = "github installation id"
-  sensitive   = true
-}
-
-variable "app_private_key" {
-  type        = string
-  description = "github private key"
-  sensitive   = true
-}
 
 // REPO GITHUB
 
@@ -93,7 +76,6 @@ variable "github_repo_token" {
   description = "github repo token"
   sensitive   = true
 }
-
 
 // CLUSTER 
 
