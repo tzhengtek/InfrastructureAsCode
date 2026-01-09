@@ -51,9 +51,28 @@ resource "helm_release" "arc_runner_set" {
     name  = "githubConfigUrl"
     value = var.github_config_url
   }
+  set {
+    name  = "template.spec.containers[0].name"
+    value = "runner"
+  }
+
+  set {
+    name  = "template.spec.containers[0].command[0]"
+    value = "/home/runner/run.sh"
+  }
 
   set {
     name  = "githubConfigSecret"
     value = kubernetes_secret_v1.github_secret.metadata[0].name
+  }
+  # 1. Point to your Custom Image in Artifact Registry
+  set {
+    name  = "template.spec.containers[0].image"
+    value = "${var.region}-docker.pkg.dev/${var.project_id}/github-runners/runner:latest"
+  }
+
+  set {
+    name  = "template.spec.containers[0].imagePullPolicy"
+    value = "Always"
   }
 }

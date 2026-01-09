@@ -28,6 +28,28 @@ on:
           - linux
 
 jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: google-github-actions/auth@v3
+        with:
+          workload_identity_provider: "projects/${{ secrets.GCP_PROJECT_NUMBER }}/locations/global/workloadIdentityPools/github-action-wif-pool/providers/github-oidc"
+          service_account: "github-action-sa@${{ secrets.GCP_PROJECT_ID }}.iam.gserviceaccount.com"
+
+      - name: Build and Push
+        run: |
+          # 1. Configure Docker
+          gcloud auth configure-docker europe-west1-docker.pkg.dev --quiet
+
+          # 2. Build & Push
+          IMAGE="europe-west1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/github-runners/runner:latest"
+          docker build -t $IMAGE .
+          docker push $IMAGE
+
   terraform-infrastructure:
     runs-on: [self-hosted-runner]
     permissions:
@@ -48,38 +70,6 @@ jobs:
         with:
           workload_identity_provider: "projects/${{ secrets.GCP_PROJECT_NUMBER }}/locations/global/workloadIdentityPools/github-action-wif-pool/providers/github-oidc"
           service_account: "github-action-sa@${{ secrets.GCP_PROJECT_ID }}.iam.gserviceaccount.com"
-
-      - name: Set up Cloud SDK
-        uses: google-github-actions/setup-gcloud@v2
-
-      - name: Get GCP Region from Terraform
-        id: get-region
-        working-directory: ./infrastructure
-        run: |
-          # Extract region from tfvars file
-          REGION=$(grep -E '^region\s*=' vars/${{ matrix.env }}.tfvars | cut -d'"' -f2 | cut -d'"' -f1 || echo "europe-west1")
-          echo "region=${REGION}" >> $GITHUB_OUTPUT
-          echo "Using region: ${REGION}"
-
-      - name: Configure Docker for Artifact Registry
-        if: github.event_name == 'push' || startsWith(github.ref, 'refs/tags/')
-        run: |
-          gcloud auth configure-docker ${{ steps.get-region.outputs.region }}-docker.pkg.dev --quiet
-
-      - name: Build and Push Custom Runner Image
-        if: github.event_name == 'push' || startsWith(github.ref, 'refs/tags/')
-        working-directory: ./infrastructure
-        run: |
-          REGISTRY="${{ steps.get-region.outputs.region }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/github-runners"
-          IMAGE_TAG="${REGISTRY}/runner:latest"
-
-          echo "Building Docker image: ${IMAGE_TAG}"
-          docker build -f Dockerfile -t ${IMAGE_TAG} .
-
-          echo "Pushing Docker image to Artifact Registry"
-          docker push ${IMAGE_TAG}
-
-          echo "Image pushed successfully: ${IMAGE_TAG}"
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
