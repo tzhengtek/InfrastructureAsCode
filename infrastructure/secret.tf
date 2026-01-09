@@ -76,19 +76,19 @@ resource "google_secret_manager_secret" "db_connection" {
 
 resource "google_sql_user" "user" {
   name     = var.db_user
-  instance = google_sql_database_instance.database_instance.name
+  instance = module.database.db_instance.name
   password = var.db_pwd
 }
 
 resource "google_secret_manager_secret_version" "db_connection" {
   secret = google_secret_manager_secret.db_connection.id
   secret_data = jsonencode({
-    host            = google_sql_database_instance.database_instance.private_ip_address
+    host            = module.database.db_instance.private_ip_address
     port            = 5432
-    database        = google_sql_database.database.name
+    database        = module.database.google_sql_database.name
     username        = var.db_user
     password        = var.db_pwd
-    connection_name = google_sql_database_instance.database_instance.connection_name
+    connection_name = module.database.db_instance.connection_name
   })
 }
 resource "google_secret_manager_secret" "github_repo_token" {
@@ -106,6 +106,6 @@ resource "google_secret_manager_secret" "github_repo_token" {
 }
 
 resource "google_secret_manager_secret_version" "github_repo_token" {
-  secret      = google_secret_manager_secret.github_private_key.id
+  secret      = google_secret_manager_secret.github_repo_token.id
   secret_data = var.github_repo_token
 }

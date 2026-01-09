@@ -1,3 +1,5 @@
+
+// GCP Variable
 variable "project_id" {
   type        = string
   description = "Cloud project ID"
@@ -79,28 +81,17 @@ variable "github_repo_token" {
 
 // CLUSTER 
 
-
-variable "gke_username" {
-  default     = ""
-  description = "gke username"
-}
-
-variable "gke_password" {
-  default     = ""
-  description = "gke password"
-}
-
-variable "gke_num_nodes" {
-  default     = 2
-  description = "number of gke nodes"
-}
-
 variable "cluster_name" {
-  default     = "self-hosted"
   description = "Runner Kubernetes cluster"
+  type        = string
+}
+
+variable "runner_pool_name" {
+  description = "Runner Pool name"
+  type        = string
 }
 
 variable "arc_runner_name" {
-  default     = "self-hosted"
   description = "Runner Kubernetes cluster"
+  type        = string
 }

@@ -49,6 +49,38 @@ jobs:
           workload_identity_provider: "projects/${{ secrets.GCP_PROJECT_NUMBER }}/locations/global/workloadIdentityPools/github-action-wif-pool/providers/github-oidc"
           service_account: "github-action-sa@${{ secrets.GCP_PROJECT_ID }}.iam.gserviceaccount.com"
 
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Get GCP Region from Terraform
+        id: get-region
+        working-directory: ./infrastructure
+        run: |
+          # Extract region from tfvars file
+          REGION=$(grep -E '^region\s*=' vars/${{ matrix.env }}.tfvars | cut -d'"' -f2 | cut -d'"' -f1 || echo "europe-west1")
+          echo "region=${REGION}" >> $GITHUB_OUTPUT
+          echo "Using region: ${REGION}"
+
+      - name: Configure Docker for Artifact Registry
+        if: github.event_name == 'push' || startsWith(github.ref, 'refs/tags/')
+        run: |
+          gcloud auth configure-docker ${{ steps.get-region.outputs.region }}-docker.pkg.dev --quiet
+
+      - name: Build and Push Custom Runner Image
+        if: github.event_name == 'push' || startsWith(github.ref, 'refs/tags/')
+        working-directory: ./infrastructure
+        run: |
+          REGISTRY="${{ steps.get-region.outputs.region }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/github-runners"
+          IMAGE_TAG="${REGISTRY}/runner:latest"
+
+          echo "Building Docker image: ${IMAGE_TAG}"
+          docker build -f Dockerfile -t ${IMAGE_TAG} .
+
+          echo "Pushing Docker image to Artifact Registry"
+          docker push ${IMAGE_TAG}
+
+          echo "Image pushed successfully: ${IMAGE_TAG}"
+
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
 
@@ -59,6 +91,27 @@ jobs:
         run: |
           terraform fmt -check -recursive
           terraform validate
+
+      - name: Terraform Plan (Cluster & Database)
+        run: terraform plan -var-file=vars/${{ matrix.env }}.tfvars -target=module.cluster -target=module.database
+        env:
+          TF_VAR_jwt_secret: ${{ secrets.JWT_SECRET }}
+          TF_VAR_ssl_cert: ${{ secrets.SSL_CERT }}
+          TF_VAR_ssl_key: ${{ secrets.SSL_KEY }}
+          TF_VAR_db_pwd: ${{ secrets.DB_PWD }}
+          TF_VAR_db_user: ${{ secrets.DB_USER }}
+          TF_VAR_github_repo_token: ${{ secrets.REPO_TOKEN }}
+
+      - name: Terraform Apply (Cluster & Database)  (on tag only)
+        if: startsWith(github.ref, 'refs/tags/')
+        run: terraform apply -auto-approve -var-file=vars/${{ matrix.env }}.tfvars -target=module.cluster -target=module.database
+        env:
+          TF_VAR_jwt_secret: ${{ secrets.JWT_SECRET }}
+          TF_VAR_ssl_cert: ${{ secrets.SSL_CERT }}
+          TF_VAR_ssl_key: ${{ secrets.SSL_KEY }}
+          TF_VAR_db_pwd: ${{ secrets.DB_PWD }}
+          TF_VAR_db_user: ${{ secrets.DB_USER }}
+          TF_VAR_github_repo_token: ${{ secrets.REPO_TOKEN }}
 
       - name: Terraform Plan
         run: terraform plan -var-file=vars/${{ matrix.env }}.tfvars

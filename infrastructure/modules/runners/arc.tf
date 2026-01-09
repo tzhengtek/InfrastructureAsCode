@@ -1,9 +1,25 @@
+
 resource "kubernetes_namespace_v1" "arc_runners" {
   metadata {
     name = "arc-runners"
   }
 }
 
+# USE GOOGLE SECRET
+# data "google_secret_manager_secret_version" "github_repo_token" {
+#   secret  = var.github_repo_token
+#   version = "latest"
+# }
+
+resource "helm_release" "arc_controller" {
+  name             = "arc-system"
+  repository       = "oci://ghcr.io/actions/actions-runner-controller-charts"
+  chart            = "gha-runner-scale-set-controller"
+  version          = "0.9.0"
+  namespace        = "arc-systems"
+  create_namespace = true
+
+}
 
 # USE GOOGLE SECRET
 # data "google_secret_manager_secret_version" "github_repo_token" {
