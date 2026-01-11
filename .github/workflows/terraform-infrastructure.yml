@@ -51,7 +51,8 @@ jobs:
   #         docker push $IMAGE
 
   terraform-infrastructure:
-    runs-on: [self-hosted-runner]
+    runs-on: [self-hosted-runner, "${{ inputs.runner_label }}"]
+
     permissions:
       contents: read
       id-token: write
