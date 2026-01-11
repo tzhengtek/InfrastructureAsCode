@@ -2,11 +2,13 @@
 module "cluster" {
   source = "./modules/cluster"
 
-  cluster_name     = var.cluster_name
-  runner_pool_name = var.runner_pool_name
-  project_id       = var.project_id
-  region           = var.region
-  zone             = var.zone
+  cluster_name         = var.cluster_name
+  runner_pool_name     = var.runner_pool_name
+  project_id           = var.project_id
+  region               = var.region
+  zone                 = var.zone
+  runner_pool_sa       = var.runner_pool_sa
+  runner_pool_sa_roles = var.runner_pool_sa_roles
 }
 
 module "runners" {

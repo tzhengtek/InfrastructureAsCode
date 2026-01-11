@@ -68,7 +68,7 @@ resource "helm_release" "arc_runner_set" {
   # 1. Point to your Custom Image in Artifact Registry
   set {
     name  = "template.spec.containers[0].image"
-    value = "${var.region}-docker.pkg.dev/${var.project_id}/github-runners/runner:latest"
+    value = var.runner_image_url
   }
 
   set {

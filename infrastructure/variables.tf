@@ -91,6 +91,16 @@ variable "runner_pool_name" {
   type        = string
 }
 
+variable "runner_pool_sa" {
+  description = "Runner Pool Service Account"
+  type        = string
+}
+
+variable "runner_pool_sa_roles" {
+  description = "Runner Pool Service Account Roles"
+  type        = list(string)
+}
+
 variable "arc_runner_name" {
   description = "Runner Kubernetes cluster"
   type        = string

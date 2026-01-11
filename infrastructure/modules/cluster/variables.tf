@@ -25,3 +25,13 @@ variable "runner_pool_name" {
   description = "Runner Pool name"
   type        = string
 }
+
+variable "runner_pool_sa" {
+  description = "Runner Pool Service Account"
+  type        = string
+}
+
+variable "runner_pool_sa_roles" {
+  description = "Runner Pool Service Account Roles"
+  type        = list(string)
+}
