@@ -26,6 +26,7 @@ on:
         type: choice
         options:
           - linux
+          - x64
 
 jobs:
   # build-and-push:
