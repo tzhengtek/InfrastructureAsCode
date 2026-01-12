@@ -22,10 +22,10 @@ on:
       runner_type:
         description: "Choose runner type (ubuntu-latest for bootstrap, self-hosted for normal op)"
         required: true
-        default: "self-hosted"
+        default: "self-hosted-runner"
         type: choice
         options:
-          - self-hosted
+          - self-hosted-runner
           - ubuntu-latest
 
 jobs:
@@ -53,7 +53,7 @@ jobs:
 
   terraform-infrastructure:
     name: Terraform
-    runs-on: ${{ inputs.runner_type || 'self-hosted' }}
+    runs-on: ${{ inputs.runner_type || 'self-hosted-runner' }}
     permissions:
       contents: read
       id-token: write
