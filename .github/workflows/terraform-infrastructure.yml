@@ -19,14 +19,14 @@ on:
         options:
           - dev
           - prd
-      runner_label:
-        description: "Runner label"
-        required: false
-        default: linux
+      runner_type:
+        description: "Choose runner type (ubuntu-latest for bootstrap, self-hosted for normal op)"
+        required: true
+        default: "self-hosted"
         type: choice
         options:
-          - linux
-          - x64
+          - self-hosted
+          - ubuntu-latest
 
 jobs:
   # build-and-push:
@@ -52,8 +52,8 @@ jobs:
   #         docker push $IMAGE
 
   terraform-infrastructure:
-    runs-on: [self-hosted-runner, linux, x64]
-
+    name: Terraform
+    runs-on: ${{ inputs.runner_type || 'self-hosted' }}
     permissions:
       contents: read
       id-token: write
