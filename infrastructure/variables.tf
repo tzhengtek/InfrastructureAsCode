@@ -57,3 +57,9 @@ variable "ssl_key" {
   sensitive   = true
 }
 
+// LOAD BALANCER & DNS //
+variable "domain_name" {
+  type        = string
+  description = "Domain name for the application (e.g., api.yourdomain.com)"
+  default     = "api.iac-epitech.com"
+}
