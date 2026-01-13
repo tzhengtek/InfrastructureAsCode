@@ -32,7 +32,6 @@ jobs:
         with:
           workload_identity_provider: "projects/${{ secrets.GCP_PROJECT_NUMBER }}/locations/global/workloadIdentityPools/github-action-pool/providers/github-oidc"
           service_account: "github-action-sa@${{ secrets.GCP_PROJECT_ID }}.iam.gserviceaccount.com"
-          audience: "https://token.actions.githubusercontent.com"
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
