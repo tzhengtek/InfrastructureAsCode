@@ -115,7 +115,7 @@ jobs:
           TF_VAR_github_repo_token: ${{ secrets.REPO_TOKEN }}
 
       - name: Terraform Apply (on tag only)
-        if: startsWith(github.ref, 'refs/tags/')
+        # if: startsWith(github.ref, 'refs/tags/')
         run: terraform apply -auto-approve -var-file=vars/${{ matrix.env }}.tfvars
         env:
           TF_VAR_jwt_secret: ${{ secrets.JWT_SECRET }}
