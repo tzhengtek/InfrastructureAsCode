@@ -1,3 +1,5 @@
+
+// GCP Variable
 variable "project_id" {
   type        = string
   description = "Cloud project ID"
@@ -6,6 +8,11 @@ variable "project_id" {
 variable "region" {
   type        = string
   description = "Region for resources"
+}
+
+variable "zone" {
+  type        = string
+  description = "Zone for resources"
 }
 
 // VPC //
@@ -38,6 +45,13 @@ variable "db_pwd" {
   sensitive   = true
 }
 
+// 
+
+variable "github_config_url" {
+  type        = string
+  description = "URL of the repo or org: https://github.com/my-org/my-repo"
+}
+
 // //
 // APP SECRET //
 
@@ -57,3 +71,37 @@ variable "ssl_key" {
   sensitive   = true
 }
 
+// REPO GITHUB
+
+variable "github_repo_token" {
+  type        = string
+  description = "github repo token"
+  sensitive   = true
+}
+
+// CLUSTER 
+
+variable "cluster_name" {
+  description = "Runner Kubernetes cluster"
+  type        = string
+}
+
+variable "runner_pool_name" {
+  description = "Runner Pool name"
+  type        = string
+}
+
+variable "runner_pool_sa" {
+  description = "Runner Pool Service Account"
+  type        = string
+}
+
+variable "runner_pool_sa_roles" {
+  description = "Runner Pool Service Account Roles"
+  type        = list(string)
+}
+
+variable "arc_runner_name" {
+  description = "Runner Kubernetes cluster"
+  type        = string
+}
