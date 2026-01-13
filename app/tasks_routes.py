@@ -64,12 +64,13 @@ def create_task():
             title=data['title'],
             content=data['content'],
             due_date=data['due_date'],
-            done=data.get('done', False)
+            done=data.get('done', False),
+            create_tasked_at=req_dt,
+            last_updated=req_dt,
+            corelation_id=correlation_id
         )
-
         db.session.add(task)
         db.session.commit()
-
         logger.info(f"[{correlation_id}] Created task {task.id}")
         return jsonify(task.to_dict()), StatusCode.CREATED
     except SQLAlchemyError as e:

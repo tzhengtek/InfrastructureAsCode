@@ -8,10 +8,14 @@ def create_app():
     app = Flask(__name__)
 
     app.config['JWT_SECRET'] = app_config.get('JWT_SECRET')
-    app.config['SQLALCHEMY_DATABASE_URI'] = (
-        f"postgresql+pg8000://{app_config['db_user']}:{app_config['db_pass']}@/"
-        f"{app_config['db_name']}?unix_sock=/cloudsql/{app_config['db_conn_name']}/.s.PGSQL.5432"
-    )
+    if not app_config["db_host"]:
+        app.config['SQLALCHEMY_DATABASE_URI'] = (
+            f"postgresql://{app_config['db_user']}:{app_config['db_pass']}@/"
+            f"{app_config['db_name']}?host=/cloudsql/{app_config['db_conn_name']}"
+        )
+    else:
+        # Standard Development connection string
+        app.config['SQLALCHEMY_DATABASE_URI'] = f"postgresql://{app_config['db_user']}:{app_config['db_pass']}@{app_config['db_host']}:5432/{app_config['db_name']}"
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
     db.init_app(app)
