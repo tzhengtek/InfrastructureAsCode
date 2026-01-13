@@ -15,6 +15,10 @@ logger = logging.getLogger(__name__)
 
 app_config = {
     'JWT_SECRET': os.getenv('JWT_SECRET'),
+    'db_user': os.getenv("DB_USER"),
+    'db_pass': os.getenv("DB_PASS"),
+    'db_name': os.getenv("DB_NAME"),
+    'db_conn_name': os.getenv("DB_CONNECTION_NAME")
 }
 
 

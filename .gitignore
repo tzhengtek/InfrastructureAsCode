@@ -57,3 +57,4 @@ ENV/
 
 # env files
 .env
+local.tfvars

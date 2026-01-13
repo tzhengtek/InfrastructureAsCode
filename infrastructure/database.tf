@@ -35,3 +35,34 @@ resource "google_sql_database" "database" {
   name     = var.db_name
   instance = google_sql_database_instance.database_instance.name
 }
+
+# Create database user
+resource "google_sql_user" "database_user" {
+  name     = var.db_user
+  instance = google_sql_database_instance.database_instance.name
+  password = var.db_pwd
+}
+
+# Output for connection string
+output "database_instance_connection_name" {
+  value       = google_sql_database_instance.database_instance.connection_name
+  description = "Connection name for Cloud SQL (for Cloud SQL Proxy)"
+}
+
+output "database_name" {
+  value       = google_sql_database.database.name
+  description = "Name of the database"
+}
+
+output "database_user" {
+  value       = google_sql_user.database_user.name
+  description = "Database user name"
+}
+
+output "database_password" {
+  value       = google_sql_user.database_user.password
+  description = "Database user password"
+  sensitive   = true
+}
+
+
