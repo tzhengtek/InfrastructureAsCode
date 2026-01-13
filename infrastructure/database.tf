@@ -29,6 +29,7 @@ resource "google_sql_database_instance" "database_instance" {
       private_network = google_compute_network.vpc.id
     }
   }
+  deletion_protection = false
 }
 
 resource "google_sql_database" "database" {

@@ -181,14 +181,14 @@ def delete_task(task_id):
             return jsonify({'error': 'Task not found'}), StatusCode.NOT_FOUND
 
         task = tasks_storage[task_id]
-        current_timestamp = parse_request_timestamp(task['request_timestamp'])
-        if current_timestamp >= req_dt:
-            logger.info(f"[{correlation_id}] Ignoring out-of-order delete request for task {task_id}")
-            return jsonify({
-                'error': 'Request timestamp is older than current task timestamp',
-                'current_timestamp': task['request_timestamp'],
-                'request_timestamp': data['request_timestamp']
-            }), StatusCode.CONFLICT
+        # current_timestamp = parse_request_timestamp(task['request_timestamp'])
+        # if current_timestamp >= req_dt:
+        #     logger.info(f"[{correlation_id}] Ignoring out-of-order delete request for task {task_id}")
+        #     return jsonify({
+        #         'error': 'Request timestamp is older than current task timestamp',
+        #         'current_timestamp': task['request_timestamp'],
+        #         'request_timestamp': data['request_timestamp']
+        #     }), StatusCode.CONFLICT
 
         deleted_task = tasks_storage.pop(task_id)
         logger.info(f"[{correlation_id}] Deleted task {task_id}")

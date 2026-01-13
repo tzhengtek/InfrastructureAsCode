@@ -46,6 +46,7 @@ variable "jwt_secret" {
   description = "JWT Secret for token generation"
   sensitive   = true
 }
+
 variable "ssl_cert" {
   type        = string
   description = "ssl certificate"
@@ -57,3 +58,10 @@ variable "ssl_key" {
   sensitive   = true
 }
 
+// OBSERVABILITY //
+
+variable "enable_managed_prometheus" {
+  description = "Utiliser GCP Managed Prometheus"
+  type        = bool
+  default     = true
+}

@@ -35,6 +35,8 @@ override.tf.json
 .terraformrc
 terraform.rc
 
+local.tfvars
+
 # Python
 __pycache__/
 *.py[cod]
