@@ -15,14 +15,35 @@ on:
 jobs:
   destroy:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./infrastructure
+    strategy:
+      matrix:
+        env: [dev]
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v3
+        with:
+          workload_identity_provider: "projects/${{ secrets.GCP_PROJECT_NUMBER }}/locations/global/workloadIdentityPools/github-action-wif-pool/providers/github-oidc"
+          service_account: "github-action-sa@${{ secrets.GCP_PROJECT_ID }}.iam.gserviceaccount.com"
 
       - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v2
+        uses: hashicorp/setup-terraform@v3
 
       - name: Init Terraform
-        run: terraform init -backend-config=backends/${{ inputs.env }}.config
+        run: terraform init -upgrade -backend-config=backends/${{ matrix.env }}.config
+
+      - name: Terraform Fmt & Validate
+        run: |
+          terraform fmt -check -recursive
+          terraform validate
+
+      - name: Terraform Apply (Cluster & Database)  (on tag only)
+        run: terraform destroy -auto-approve -var-file=vars/${{ matrix.env }}.tfvars -target=module.cluster -target=module.database
 
       - name: Terraform Apply (on tag only)
-        run: terraform destroy -auto-approve -var-file=vars/${{ inputs.env }}.tfvars
+        run: terraform destroy -auto-approve -var-file=vars/${{ matrix.env }}.tfvars
