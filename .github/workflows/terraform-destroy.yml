@@ -28,9 +28,6 @@ jobs:
     defaults:
       run:
         working-directory: ./infrastructure
-    strategy:
-      matrix:
-        env: [dev]
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -45,15 +42,16 @@ jobs:
         uses: hashicorp/setup-terraform@v3
 
       - name: Init Terraform
-        run: terraform init -upgrade -backend-config=backends/${{ matrix.env }}.config
+        run: terraform init -upgrade -backend-config=backends/${{ inputs.env }}.config
 
       - name: Terraform Fmt & Validate
         run: |
           terraform fmt -check -recursive
           terraform validate
 
-      - name: Terraform Apply (Cluster & Database)  (on tag only)
-        run: terraform destroy -auto-approve -var-file=vars/${{ matrix.env }}.tfvars -target=module.cluster -target=module.database
+      - name: Terraform Destroy (Everything except Cluster & Database)
+        run: terraform destroy -auto-approve -var-file=vars/${{ inputs.env }}.tfvars -target=module.runners
+        continue-on-error: true
 
-      - name: Terraform Apply (on tag only)
-        run: terraform destroy -auto-approve -var-file=vars/${{ matrix.env }}.tfvars
+      - name: Terraform Destroy (Full Infrastructure)
+        run: terraform destroy -auto-approve -var-file=vars/${{ inputs.env }}.tfvars
