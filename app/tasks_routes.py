@@ -28,7 +28,8 @@ def validate_task_data(data, require_all=False):
         try:
             parse_request_timestamp(data['request_timestamp'])
         except Exception:
-            errors.append("Invalid request_timestamp format. Expected ISO 8601")
+            errors.append(
+                "Invalid request_timestamp format. Expected ISO 8601")
     if 'done' in data and data['done'] is not None:
         if not isinstance(data['done'], bool):
             errors.append("Field 'done' must be a boolean")
@@ -111,7 +112,8 @@ def get_task(task_id):
         logger.error(f"[{correlation_id}] Database error: {str(e)}")
         return jsonify({'error': 'Database error'}), StatusCode.INTERNAL_SERVER_ERROR
     except Exception as e:
-        logger.error(f"[{correlation_id}] Error getting task {task_id}: {str(e)}")
+        logger.error(
+            f"[{correlation_id}] Error getting task {task_id}: {str(e)}")
         return jsonify({'error': 'Internal server error'}), StatusCode.INTERNAL_SERVER_ERROR
 
 
@@ -137,6 +139,13 @@ def update_task(task_id):
         task = Task.query.filter_by(id=task_id).first()
         if not task:
             return jsonify({'error': 'Task not found'}), StatusCode.NOT_FOUND
+        if task.updated_at.tzinfo is None:
+            task_updated_at = task.updated_at.replace(tzinfo=timezone.utc)
+        else:
+            task_updated_at = task.updated_at
+
+        if req_dt < task_updated_at:
+            return jsonify({'error': 'Conflict: request timestamp is older than last update'}), StatusCode.CONFLICT
 
         # Update fields
         if 'title' in data:
@@ -147,6 +156,7 @@ def update_task(task_id):
             task.due_date = data['due_date']
         if 'done' in data:
             task.done = data['done']
+        task.updated_at = req_dt
 
         db.session.commit()
         logger.info(f"[{correlation_id}] Updated task {task_id}")
@@ -177,6 +187,14 @@ def delete_task(task_id):
         task = Task.query.filter_by(id=task_id).first()
         if not task:
             return jsonify({'error': 'Task not found'}), StatusCode.NOT_FOUND
+
+        if task.updated_at.tzinfo is None:
+            task_updated_at = task.updated_at.replace(tzinfo=timezone.utc)
+        else:
+            task_updated_at = task.updated_at
+
+        if req_dt < task_updated_at:
+            return jsonify({'error': 'Conflict: request timestamp is older than last update'}), StatusCode.CONFLICT
 
         db.session.delete(task)
         db.session.commit()
