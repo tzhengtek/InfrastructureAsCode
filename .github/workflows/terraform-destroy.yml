@@ -51,7 +51,9 @@ jobs:
 
       - name: Terraform Destroy (Everything except Cluster & Database)
         run: terraform destroy -auto-approve -var-file=vars/${{ inputs.env }}.tfvars -target=module.runners
-        continue-on-error: true
+
+      - name: Terraform Destroy (Everything except Cluster & Database)
+        run: terraform destroy -auto-approve -var-file=vars/${{ inputs.env }}.tfvars -target=module.database
 
       - name: Terraform Destroy (Full Infrastructure)
         run: terraform destroy -auto-approve -var-file=vars/${{ inputs.env }}.tfvars
