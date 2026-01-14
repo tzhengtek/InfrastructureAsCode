@@ -18,7 +18,8 @@ app_config = {
     'db_user': os.getenv("DB_USER"),
     'db_pass': os.getenv("DB_PASS"),
     'db_name': os.getenv("DB_NAME"),
-    'db_conn_name': os.getenv("DB_CONNECTION_NAME")
+    'db_conn_name': os.getenv("DB_CONNECTION_NAME"),
+    'db_host': os.getenv("DB_HOST")
 }
 
 
@@ -38,7 +39,7 @@ def require_auth(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         auth_header = request.headers.get('Authorization')
-        correlation_id = request.headers.get('correlation_id', 'unknown')
+        correlation_id = request.headers.get('Correlation-Id')
 
         if not auth_header:
             logger.warning(f"[{correlation_id}] Missing Authorization header")

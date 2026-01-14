@@ -29,7 +29,6 @@ def validate_task_data(data, require_all=False):
             parse_request_timestamp(data['request_timestamp'])
         except Exception:
             errors.append("Invalid request_timestamp format. Expected ISO 8601")
-
     if 'done' in data and data['done'] is not None:
         if not isinstance(data['done'], bool):
             errors.append("Field 'done' must be a boolean")
@@ -40,8 +39,7 @@ def validate_task_data(data, require_all=False):
 @bp.route('/tasks', methods=['POST'])
 @require_auth
 def create_task():
-    correlation_id = request.headers.get('correlation_id', 'unknown')
-    # Trace incoming request
+    correlation_id = request.headers.get('Correlation-Id')
     logger.info(f"[{correlation_id}] POST /tasks incoming")
     try:
         # Validate in coming task
@@ -65,9 +63,9 @@ def create_task():
             content=data['content'],
             due_date=data['due_date'],
             done=data.get('done', False),
-            create_tasked_at=req_dt,
-            last_updated=req_dt,
-            corelation_id=correlation_id
+            created_at=req_dt,
+            updated_at=req_dt,
+            correlation_id=correlation_id
         )
         db.session.add(task)
         db.session.commit()
@@ -86,7 +84,7 @@ def create_task():
 @bp.route('/tasks', methods=['GET'])
 @require_auth
 def list_tasks():
-    correlation_id = request.headers.get('correlation_id', 'unknown')
+    correlation_id = request.headers.get('Correlation-Id')
     try:
         logger.info(f"[{correlation_id}] GET /tasks incoming")
         tasks = Task.query.order_by(Task.created_at).all()
@@ -102,7 +100,7 @@ def list_tasks():
 @bp.route('/tasks/<task_id>', methods=['GET'])
 @require_auth
 def get_task(task_id):
-    correlation_id = request.headers.get('correlation_id', 'unknown')
+    correlation_id = request.headers.get('Correlation-Id')
     try:
         logger.info(f"[{correlation_id}] GET /tasks/{task_id} incoming")
         task = Task.query.filter_by(id=task_id).first()
@@ -120,7 +118,7 @@ def get_task(task_id):
 @bp.route('/tasks/<task_id>', methods=['PUT'])
 @require_auth
 def update_task(task_id):
-    correlation_id = request.headers.get('correlation_id', 'unknown')
+    correlation_id = request.headers.get('Correlation-Id')
     logger.info(f"[{correlation_id}] PUT /tasks/{task_id} incoming")
     try:
         data = request.get_json()
@@ -167,7 +165,7 @@ def update_task(task_id):
 @bp.route('/tasks/<task_id>', methods=['DELETE'])
 @require_auth
 def delete_task(task_id):
-    correlation_id = request.headers.get('correlation_id', 'unknown')
+    correlation_id = request.headers.get('Correlation-Id')
     logger.info(f"[{correlation_id}] DELETE /tasks/{task_id} incoming")
     try:
         data = request.get_json() or {}

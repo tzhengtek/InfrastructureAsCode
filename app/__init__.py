@@ -1,4 +1,3 @@
-import os
 from flask import Flask
 from .common import app_config
 from .models import db
