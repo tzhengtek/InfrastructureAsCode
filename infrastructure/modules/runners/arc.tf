@@ -14,11 +14,10 @@ resource "helm_release" "arc_controller" {
 
 }
 
-# USE GOOGLE SECRET
-# data "google_secret_manager_secret_version" "github_repo_token" {
-#   secret  = var.github_repo_token
-#   version = "latest"
-# }
+data "google_secret_manager_secret_version" "github_repo_token" {
+  secret  = var.github_repo_token
+  version = "latest"
+}
 
 resource "kubernetes_secret_v1" "github_secret" {
   metadata {
