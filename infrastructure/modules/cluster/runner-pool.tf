@@ -29,6 +29,10 @@ resource "google_container_node_pool" "runner_pool" {
     oauth_scopes = [
       "https://www.googleapis.com/auth/cloud-platform"
     ]
+
+    workload_metadata_config {
+      mode = "GKE_METADATA"
+    }
   }
 
   depends_on = [google_container_cluster.primary]

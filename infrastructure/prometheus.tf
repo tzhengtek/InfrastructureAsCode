@@ -19,10 +19,42 @@ resource "google_compute_address" "grafana_ip" {
   region = var.region
 }
 
+# GCP Service Account for Grafana
+resource "google_service_account" "grafana" {
+  account_id   = "grafana-sa"
+  display_name = "Grafana Service Account"
+  project      = var.project_id
+}
+
+# IAM: Grant monitoring viewer role to Grafana SA
+resource "google_project_iam_member" "grafana_monitoring_viewer" {
+  project = var.project_id
+  role    = "roles/monitoring.viewer"
+  member  = "serviceAccount:${google_service_account.grafana.email}"
+}
+
+# Workload Identity binding: Allow K8s SA to impersonate GCP SA
+resource "google_service_account_iam_member" "grafana_workload_identity" {
+  service_account_id = google_service_account.grafana.name
+  role               = "roles/iam.workloadIdentityUser"
+  member             = "serviceAccount:${var.project_id}.svc.id.goog[monitoring/grafana]"
+}
+
 # Grafana deployment via Helm
 resource "kubernetes_namespace_v1" "monitoring" {
   metadata {
     name = "monitoring"
+  }
+}
+
+# Kubernetes Service Account for Grafana with Workload Identity annotation
+resource "kubernetes_service_account_v1" "grafana" {
+  metadata {
+    name      = "grafana"
+    namespace = kubernetes_namespace_v1.monitoring.metadata[0].name
+    annotations = {
+      "iam.gke.io/gcp-service-account" = google_service_account.grafana.email
+    }
   }
 }
 
@@ -32,6 +64,17 @@ resource "helm_release" "grafana" {
   chart      = "grafana"
   namespace  = kubernetes_namespace_v1.monitoring.metadata[0].name
   version    = "7.3.0"
+
+  # Use the Kubernetes Service Account with Workload Identity
+  set {
+    name  = "serviceAccount.create"
+    value = "false"
+  }
+
+  set {
+    name  = "serviceAccount.name"
+    value = kubernetes_service_account_v1.grafana.metadata[0].name
+  }
 
   set {
     name  = "adminPassword"
@@ -58,36 +101,35 @@ resource "helm_release" "grafana" {
     value = "10Gi"
   }
 
-  # Datasource for Google Cloud Managed Prometheus
-  set {
-    name  = "datasources.datasources\\.yaml.apiVersion"
-    value = "1"
-  }
+  # Configure datasource using Google Cloud Monitoring with PromQL support
+  values = [
+    yamlencode({
+      datasources = {
+        "datasources.yaml" = {
+          apiVersion = 1
+          datasources = [
+            {
+              # Use Google Cloud Monitoring datasource (stackdriver) 
+              # which supports PromQL queries via Managed Prometheus
+              name      = "Google Cloud Managed Prometheus"
+              type      = "stackdriver"
+              access    = "proxy"
+              isDefault = true
+              jsonData = {
+                # Authentication type: GCE uses Workload Identity automatically
+                authenticationType = "gce"
+                defaultProject     = "${var.project_id}"
+              }
+            }
+          ]
+        }
+      }
+    })
+  ]
 
-  set {
-    name  = "datasources.datasources\\.yaml.datasources[0].name"
-    value = "Prometheus"
-  }
-
-  set {
-    name  = "datasources.datasources\\.yaml.datasources[0].type"
-    value = "prometheus"
-  }
-
-  set {
-    name  = "datasources.datasources\\.yaml.datasources[0].url"
-    value = "https://monitoring.googleapis.com/v1/projects/${var.project_id}/location/global/prometheus"
-  }
-
-  set {
-    name  = "datasources.datasources\\.yaml.datasources[0].access"
-    value = "proxy"
-  }
-
-  set {
-    name  = "datasources.datasources\\.yaml.datasources[0].isDefault"
-    value = "true"
-  }
-
-  depends_on = [google_project_service.monitoring]
+  depends_on = [
+    google_project_service.monitoring,
+    google_service_account_iam_member.grafana_workload_identity,
+    kubernetes_service_account_v1.grafana
+  ]
 }

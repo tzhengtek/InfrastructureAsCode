@@ -7,9 +7,14 @@ resource "google_container_cluster" "primary" {
 
   deletion_protection = false
 
+  # Enable Workload Identity
+  workload_identity_config {
+    workload_pool = "${var.project_id}.svc.id.goog"
+  }
+
   # Google Managed Prometheus
   monitoring_config {
-    enable_components = ["SYSTEM_COMPONENTS", "WORKLOADS"]
+    enable_components = ["SYSTEM_COMPONENTS"]
     managed_prometheus {
       enabled = true
     }
