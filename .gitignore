@@ -5,6 +5,8 @@
 *.tfstate
 *.tfstate.*
 
+local.tfvars
+
 # Crash log files
 crash.log
 crash.*.log
@@ -59,3 +61,4 @@ ENV/
 
 # env files
 .env
+local.tfvars

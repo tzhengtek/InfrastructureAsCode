@@ -15,6 +15,11 @@ logger = logging.getLogger(__name__)
 
 app_config = {
     'JWT_SECRET': os.getenv('JWT_SECRET'),
+    'db_user': os.getenv("DB_USER"),
+    'db_pass': os.getenv("DB_PASS"),
+    'db_name': os.getenv("DB_NAME"),
+    'db_conn_name': os.getenv("DB_CONNECTION_NAME"),
+    'db_host': os.getenv("DB_HOST")
 }
 
 
@@ -33,14 +38,20 @@ def parse_request_timestamp(ts_str):
 def require_auth(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
+        correlation_id = request.headers.get('Correlation-Id')
+
+        if not correlation_id:
+            logger.warning("Missing Correlation-Id header")
+            return jsonify({'error': 'Missing Correlation-Id header'}), StatusCode.UNAUTHORIZED
+
         auth_header = request.headers.get('Authorization')
-        correlation_id = request.headers.get('correlation_id', 'unknown')
 
         if not auth_header:
             logger.warning(f"[{correlation_id}] Missing Authorization header")
             return jsonify({'error': 'Missing Authorization header'}), StatusCode.UNAUTHORIZED
         try:
-            token = auth_header.split(' ')[1] if ' ' in auth_header else auth_header
+            token = auth_header.split(
+                ' ')[1] if ' ' in auth_header else auth_header
             jwt.decode(token, app_config['JWT_SECRET'], algorithms=['HS512'])
         except jwt.ExpiredSignatureError:
             logger.warning(f"[{correlation_id}] Token expired")

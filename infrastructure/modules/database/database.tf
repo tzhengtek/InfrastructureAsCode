@@ -7,7 +7,7 @@ resource "google_sql_database_instance" "database_instance" {
   database_version = "POSTGRES_15"
   region           = var.region
 
-  depends_on = [google_service_networking_connection.private_vpc_connection]
+  depends_on = [var.private_vpc_connection]
   settings {
     tier              = "db-f1-micro"
     availability_type = "ZONAL"
@@ -26,7 +26,7 @@ resource "google_sql_database_instance" "database_instance" {
 
     ip_configuration {
       ipv4_enabled    = false
-      private_network = google_compute_network.vpc.id
+      private_network = var.vpc.id
     }
   }
   deletion_protection = false
@@ -36,3 +36,12 @@ resource "google_sql_database" "database" {
   name     = var.db_name
   instance = google_sql_database_instance.database_instance.name
 }
+
+# Create database user
+resource "google_sql_user" "database_user" {
+  name     = var.db_user
+  instance = google_sql_database_instance.database_instance.name
+  password = var.db_pwd
+}
+
+
