@@ -19,9 +19,9 @@ resource "google_container_node_pool" "runner_pool" {
     max_node_count = 2
   }
   node_config {
-    preemptible  = true
-    machine_type = "n1-standard-1"
-
+    spot         = true
+    machine_type = "e2-standard-2"
+    disk_size_gb = 30
 
     service_account = google_service_account.gke_nodes.email
     labels = {

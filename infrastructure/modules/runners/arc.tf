@@ -4,13 +4,6 @@ resource "kubernetes_namespace_v1" "arc_runners" {
     name = "arc-runners"
   }
 }
-
-# USE GOOGLE SECRET
-# data "google_secret_manager_secret_version" "github_repo_token" {
-#   secret  = var.github_repo_token
-#   version = "latest"
-# }
-
 resource "helm_release" "arc_controller" {
   name             = "arc-system"
   repository       = "oci://ghcr.io/actions/actions-runner-controller-charts"
@@ -57,11 +50,6 @@ resource "helm_release" "arc_runner_set" {
   }
 
   set {
-    name  = "template.spec.containers[0].command[0]"
-    value = "/home/runner/run.sh"
-  }
-
-  set {
     name  = "githubConfigSecret"
     value = kubernetes_secret_v1.github_secret.metadata[0].name
   }
@@ -74,5 +62,26 @@ resource "helm_release" "arc_runner_set" {
   set {
     name  = "template.spec.containers[0].imagePullPolicy"
     value = "Always"
+  }
+
+  set {
+    name  = "template.spec.tolerations[0].key"
+    value = "dedicated"
+  }
+  set {
+    name  = "template.spec.tolerations[0].operator"
+    value = "Equal"
+  }
+  set {
+    name  = "template.spec.tolerations[0].value"
+    value = "runner"
+  }
+  set {
+    name  = "template.spec.tolerations[0].effect"
+    value = "NoSchedule"
+  }
+  set {
+    name  = "template.spec.nodeSelector.workload-type"
+    value = "runner"
   }
 }
