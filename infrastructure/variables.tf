@@ -113,3 +113,9 @@ variable "enable_managed_prometheus" {
   type        = bool
   default     = true
 }
+
+variable "grafana_admin_password" {
+  description = "Mot de passe admin Grafana"
+  type        = string
+  sensitive   = true
+}

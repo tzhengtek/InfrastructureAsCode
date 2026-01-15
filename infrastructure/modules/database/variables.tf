@@ -20,12 +20,6 @@ variable "vpc" {
   type        = any
 }
 
-variable "db_name" {
-  type        = string
-  description = "Name of the database"
-  default     = "app-db"
-}
-
 variable "db_user" {
   type        = string
   description = "Database user name"

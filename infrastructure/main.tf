@@ -28,6 +28,8 @@ module "runners" {
 module "database" {
   source = "./modules/database"
 
+  db_pwd = var.db_pwd
+  db_user = var.db_user
   db_name = var.db_name
   region  = var.region
 

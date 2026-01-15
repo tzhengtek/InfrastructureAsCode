@@ -25,3 +25,8 @@ output "project_id" {
 #   value       = google_container_cluster.primary.endpoint
 #   description = "GKE Cluster Host"
 # }
+
+output "grafana_ip" {
+  value       = google_compute_address.grafana_ip.address
+  description = "Static IP address for Grafana"
+}
