@@ -28,6 +28,12 @@ resource "google_container_node_pool" "runner_pool" {
       workload-type = "runner"
     }
 
+    taint {
+      key    = "dedicated"
+      value  = "runner"
+      effect = "NO_SCHEDULE"
+    }
+
     oauth_scopes = [
       "https://www.googleapis.com/auth/cloud-platform"
     ]

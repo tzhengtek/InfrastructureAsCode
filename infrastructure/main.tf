@@ -15,7 +15,6 @@ module "cluster" {
 module "runners" {
   source = "./modules/runners"
 
-  github_repo_token = var.github_repo_token
   project_id        = var.project_id
   region            = var.region
   zone              = var.zone

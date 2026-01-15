@@ -11,11 +11,12 @@ resource "helm_release" "arc_controller" {
   version          = "0.9.0"
   namespace        = "arc-systems"
   create_namespace = true
-
 }
 
+# Fetch GitHub token from Secret Manager
+# The token is stored in Secret Manager by infrastructure/secret.tf
 data "google_secret_manager_secret_version" "github_repo_token" {
-  secret  = var.github_repo_token
+  secret  = "github-repo-token"
   version = "latest"
 }
 
@@ -26,7 +27,7 @@ resource "kubernetes_secret_v1" "github_secret" {
   }
 
   data = {
-    github_token = var.github_repo_token
+    github_token = data.google_secret_manager_secret_version.github_repo_token.secret_data
   }
 }
 
@@ -52,6 +53,18 @@ resource "helm_release" "arc_runner_set" {
     name  = "githubConfigSecret"
     value = kubernetes_secret_v1.github_secret.metadata[0].name
   }
+
+  # Set custom runner labels so workflows can target them
+  set {
+    name  = "runnerGroup"
+    value = "default"
+  }
+
+  set {
+    name  = "runnerScaleSetName"
+    value = var.arc_runner_name
+  }
+
   # 1. Point to your Custom Image in Artifact Registry
   set {
     name  = "template.spec.containers[0].image"

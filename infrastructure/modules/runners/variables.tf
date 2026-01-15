@@ -16,12 +16,6 @@ variable "zone" {
 
 
 // Github credentials Variables
-variable "github_repo_token" {
-  type        = string
-  description = "URL of the repo or org: https://github.com/my-org/my-repo"
-}
-
-
 variable "github_config_url" {
   type        = string
   description = "URL of the repo or org: https://github.com/my-org/my-repo"
