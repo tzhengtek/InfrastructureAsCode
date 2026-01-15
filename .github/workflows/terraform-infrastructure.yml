@@ -55,6 +55,7 @@ jobs:
   terraform-infrastructure:
     name: Terraform
     needs: build-and-push
+    if: success() || skipped()
     runs-on: ${{ inputs.runner_type || 'self-hosted-runner' }}
     permissions:
       contents: read
