@@ -34,4 +34,5 @@ module "database" {
   private_vpc_connection = google_service_networking_connection.private_vpc_connection
   vpc                    = google_compute_network.vpc
   deletion_protection    = var.deletion_protection
+  depends_on             = [google_service_networking_connection.private_vpc_connection]
 }
