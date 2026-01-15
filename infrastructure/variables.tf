@@ -79,7 +79,7 @@ variable "github_repo_token" {
   sensitive   = true
 }
 
-// CLUSTER 
+// CLUSTER
 
 variable "cluster_name" {
   description = "Runner Kubernetes cluster"
@@ -98,6 +98,13 @@ variable "runner_pool_sa" {
 
 variable "runner_pool_sa_roles" {
   description = "Runner Pool Service Account Roles"
+  type        = list(string)
+}
+
+// DNS
+variable "domain_name" {
+  type        = string
+  description = "Domain name for the application (e.g., myapp.example.com)"
   type        = list(string)
 }
 
