@@ -9,6 +9,7 @@ module "cluster" {
   zone                 = var.zone
   runner_pool_sa       = var.runner_pool_sa
   runner_pool_sa_roles = var.runner_pool_sa_roles
+  deletion_protection  = var.deletion_protection
 }
 
 module "runners" {
@@ -33,4 +34,5 @@ module "database" {
 
   private_vpc_connection = google_service_networking_connection.private_vpc_connection
   vpc                    = google_compute_network.vpc
+  deletion_protection    = var.deletion_protection
 }

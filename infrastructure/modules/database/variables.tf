@@ -19,3 +19,8 @@ variable "vpc" {
   description = "VPC value"
   type        = any
 }
+
+variable "deletion_protection" {
+  description = "Deletion protection state"
+  type        = bool
+}

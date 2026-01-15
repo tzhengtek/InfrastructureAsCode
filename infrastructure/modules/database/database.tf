@@ -8,7 +8,7 @@ resource "google_sql_database_instance" "database_instance" {
   region           = var.region
 
   depends_on          = [var.private_vpc_connection]
-  deletion_protection = false
+  deletion_protection = var.deletion_protection
 
   settings {
     tier              = "db-f1-micro"

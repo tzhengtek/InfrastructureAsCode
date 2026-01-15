@@ -39,7 +39,7 @@ resource "kubernetes_secret_v1" "github_secret" {
 }
 
 resource "helm_release" "arc_runner_set" {
-  name       = "self-hosted-runner"
+  name       = var.arc_runner_name
   repository = "oci://ghcr.io/actions/actions-runner-controller-charts"
   chart      = "gha-runner-scale-set"
   version    = "0.9.0"

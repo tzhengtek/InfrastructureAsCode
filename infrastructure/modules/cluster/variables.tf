@@ -35,3 +35,9 @@ variable "runner_pool_sa_roles" {
   description = "Runner Pool Service Account Roles"
   type        = list(string)
 }
+
+variable "deletion_protection" {
+  description = "Deletion protection state"
+  type        = bool
+}
+

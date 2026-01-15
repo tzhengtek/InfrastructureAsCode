@@ -5,5 +5,5 @@ resource "google_container_cluster" "primary" {
   remove_default_node_pool = true
   initial_node_count       = 1
 
-  deletion_protection = false
+  deletion_protection = var.deletion_protection
 }
