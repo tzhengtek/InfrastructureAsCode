@@ -49,11 +49,29 @@ jobs:
           terraform fmt -check -recursive
           terraform validate
 
-      - name: Terraform Destroy (Everything except Cluster & Database)
+      - name: Terraform Destroy (Runners)
         run: terraform destroy -auto-approve -var-file=vars/${{ inputs.env }}.tfvars -target=module.runners
 
-      - name: Terraform Destroy (Everything except Cluster & Database)
+      - name: Terraform Destroy (Database)
         run: terraform destroy -auto-approve -var-file=vars/${{ inputs.env }}.tfvars -target=module.database
 
       - name: Terraform Destroy (Full Infrastructure)
         run: terraform destroy -auto-approve -var-file=vars/${{ inputs.env }}.tfvars
+
+      - name: Disable Self-Hosted Runners (after successful destruction)
+        if: success()
+        run: |
+          echo "🗑️  Infrastructure destroyed successfully!"
+          echo "📝 Disabling self-hosted runners for next deployment..."
+
+          # Reset the variable so next deployment bootstraps with ubuntu-latest
+          if gh variable set USE_SELF_HOSTED_RUNNERS --body "false" 2>/dev/null; then
+            echo "✅ Successfully disabled self-hosted runners!"
+            echo "Next deployment will automatically use ubuntu-latest for bootstrap."
+          else
+            echo "⚠️  Could not auto-disable. Please manually set:"
+            echo "   gh variable set USE_SELF_HOSTED_RUNNERS --body \"false\""
+            echo "   Or delete via Settings → Secrets and variables → Actions → Variables"
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

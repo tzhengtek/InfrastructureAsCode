@@ -1,5 +1,11 @@
 name: Terraform Infrastructure Deployment
 
+# AUTOMATIC RUNNER SELECTION:
+# - First deployment (no USE_SELF_HOSTED_RUNNERS var): Uses ubuntu-latest → Creates self-hosted runners
+# - After deployment: Variable is set automatically → All future runs use self-hosted-runner
+# - Production: Each environment manages its own variable (dev/prd separate)
+# - Manual override: Always available via workflow_dispatch input
+
 on:
   push:
     branches:
@@ -21,7 +27,7 @@ on:
           - prd
       runner_type:
         description: "Choose runner type (ubuntu-latest for bootstrap, self-hosted for normal op)"
-        required: true
+        required: false
         default: "self-hosted-runner"
         type: choice
         options:
@@ -29,8 +35,14 @@ on:
           - ubuntu-latest
 
 jobs:
+  # Build image when needed:
+  # 1. Using ubuntu-latest runner (bootstrap mode or explicit selection)
+  # 2. Dockerfile was modified
   build-and-push:
-    if: inputs.runner_type == 'ubuntu-latest' || contains(github.event.head_commit.modified, 'Dockerfile')
+    if: |
+      inputs.runner_type == 'ubuntu-latest' || 
+      (vars.USE_SELF_HOSTED_RUNNERS != 'true' && github.event_name != 'workflow_dispatch') ||
+      contains(github.event.head_commit.modified, 'Dockerfile')
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -56,7 +68,11 @@ jobs:
     name: Terraform
     needs: build-and-push
     if: ${{ always() && (needs.build-and-push.result == 'success' || needs.build-and-push.result == 'skipped') }}
-    runs-on: ${{ inputs.runner_type || 'self-hosted-runner' }}
+    # Auto-select runner based on context:
+    # 1. Manual trigger: use selected runner_type
+    # 2. Auto trigger (push/PR): use vars.USE_SELF_HOSTED_RUNNERS to decide
+    #    - Set repository variable USE_SELF_HOSTED_RUNNERS=true after bootstrap
+    runs-on: ${{ inputs.runner_type || (vars.USE_SELF_HOSTED_RUNNERS == 'true' && 'self-hosted-runner' || 'ubuntu-latest') }}
     permissions:
       contents: read
       id-token: write
@@ -106,3 +122,29 @@ jobs:
       - name: Terraform Apply (on tag only)
         if: startsWith(github.ref, 'refs/tags/')
         run: terraform apply -auto-approve -var-file=vars/${{ matrix.env }}.tfvars
+
+      - name: Wait for Self-Hosted Runners to be Ready
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          echo "Waiting for self-hosted runners to register with GitHub..."
+          sleep 60
+
+      - name: Enable Self-Hosted Runners (after successful deployment)
+        if: |
+          startsWith(github.ref, 'refs/tags/') && 
+          success() && 
+          vars.USE_SELF_HOSTED_RUNNERS != 'true'
+        run: |
+          echo "✅ Self-hosted runners deployed successfully!"
+          echo "📝 Enabling self-hosted runners for future runs..."
+
+          # Try to set the variable (requires repo admin token)
+          if gh variable set USE_SELF_HOSTED_RUNNERS --body "true" 2>/dev/null; then
+            echo "✅ Successfully enabled self-hosted runners!"
+          else
+            echo "⚠️  Could not auto-enable. Please manually set:"
+            echo "   gh variable set USE_SELF_HOSTED_RUNNERS --body \"true\""
+            echo "   Or via Settings → Secrets and variables → Actions → Variables"
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
