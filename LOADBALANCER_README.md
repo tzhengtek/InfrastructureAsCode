@@ -1,59 +1,95 @@
-# Load Balancer Implementation - Complete Guide
+# Load Balancer Implementation - Technical Guide
 
-## 📋 Table of Contents
-1. [Overview](#overview)
-2. [What Was Built](#what-was-built)
+## Table of Contents
+1. [Quick Start for Teammates](#quick-start-for-teammates)
+2. [Overview](#overview)
 3. [Architecture](#architecture)
 4. [How It Works](#how-it-works)
-5. [File Structure](#file-structure)
-6. [Key Concepts Explained](#key-concepts-explained)
-7. [Defense Preparation](#defense-preparation)
-8. [Common Commands](#common-commands)
-9. [Troubleshooting](#troubleshooting)
+5. [Testing Guide](#testing-guide)
+6. [Updating the Application](#updating-the-application)
+7. [File Structure](#file-structure)
+8. [Key Concepts](#key-concepts)
+9. [Defense Preparation](#defense-preparation)
+10. [Commands Reference](#commands-reference)
+11. [Troubleshooting](#troubleshooting)
 
 ---
 
-## Overview
+## Quick Start for Teammates
 
-This implementation adds a **production-ready load balancer** with **autoscaling** for the Task Manager application. It fulfills the course requirements for:
+### Prerequisites
 
-- ✅ External Load Balancer (Google Cloud Load Balancer via Ingress)
-- ✅ Horizontal Pod Autoscaler (HPA) - scales pods based on CPU
-- ✅ Cluster Autoscaler - scales nodes when needed
-- ✅ HTTPS with SSL certificate
-- ✅ Custom DNS domain
+```bash
+# Install required tools
+brew install kubectl google-cloud-sdk hey
+
+# Authenticate to GCP
+gcloud auth login
+gcloud config set project iac-epitech-dev
+
+# Connect to the GKE cluster
+gcloud container clusters get-credentials perth-gke-cluster --region europe-west1
+```
+
+### Verify Everything Works
+
+```bash
+# Check you're connected to the right cluster
+kubectl config current-context
+# Should show: gke_iac-epitech-dev_europe-west1_perth-gke-cluster
+
+# Check pods are running
+kubectl get pods
+# Should show 2-5 pods with STATUS: Running
+
+# Test the endpoints
+curl http://api.iac-epitech.com/health
+curl https://api.iac-epitech.com/health
+```
 
 ### Live URLs
 
 | Type | URL | Status |
 |------|-----|--------|
-| HTTP (IP) | http://136.110.177.86/health | ✅ Working |
-| HTTP (Domain) | http://api.iac-epitech.com/health | ✅ Working |
-| HTTPS (Domain) | https://api.iac-epitech.com/health | ⏳ SSL provisioning |
+| HTTP | http://api.iac-epitech.com/health | Working |
+| HTTPS | https://api.iac-epitech.com/health | Working |
+| Static IP | 136.110.177.86 | Working |
 
 ---
 
-## What Was Built
+## Overview
 
-### Infrastructure (Terraform)
+This branch implements a **production-ready load balancer** with **autoscaling** using GKE (Google Kubernetes Engine).
 
-| Resource | Name | Purpose |
-|----------|------|---------|
-| **GKE Cluster** | perth-gke-cluster | Kubernetes cluster to run the app |
-| **Node Pool** | perth-node-pool | Worker machines (1-5 e2-small VMs) |
-| **Static IP** | task-manager-static-ip | Permanent IP: 136.110.177.86 |
-| **SSL Certificate** | task-manager-ssl-cert | HTTPS encryption |
-| **DNS Zone** | perth-zone | DNS for api.iac-epitech.com |
-| **Artifact Registry** | perth-app-repo | Docker image storage |
+### What This Branch Provides
+
+| Component | Description |
+|-----------|-------------|
+| **GKE Cluster** | Kubernetes cluster with autoscaling nodes (1-5 VMs) |
+| **Load Balancer** | Google Cloud HTTP(S) Load Balancer via Kubernetes Ingress |
+| **HPA** | Horizontal Pod Autoscaler - scales pods based on CPU (2-10 pods) |
+| **SSL/HTTPS** | Google-managed certificate for api.iac-epitech.com |
+| **DNS** | Cloud DNS A record pointing to static IP |
+| **Artifact Registry** | Docker image storage at `europe-west1-docker.pkg.dev/iac-epitech-dev/perth-repo/` |
+
+### Infrastructure Resources (Terraform)
+
+| Resource | Name | File |
+|----------|------|------|
+| GKE Cluster | `perth-gke-cluster` | `infrastructure-loadbalancer/gke.tf` |
+| Node Pool | `perth-node-pool` | `infrastructure-loadbalancer/gke.tf` |
+| Static IP | `task-manager-static-ip` | `infrastructure-loadbalancer/loadbalancer.tf` |
+| SSL Cert | `task-manager-ssl-cert` | `infrastructure-loadbalancer/loadbalancer.tf` |
+| Artifact Registry | `perth-repo` | `infrastructure-loadbalancer/artifact_registry.tf` |
 
 ### Kubernetes Resources
 
-| Resource | Name | Purpose |
-|----------|------|---------|
-| **Deployment** | task-manager-deployment | Runs 2-10 pods of Flask app |
-| **Service** | task-manager-service | Internal load balancing |
-| **Ingress** | task-manager-ingress | External load balancer |
-| **HPA** | task-manager-hpa | Autoscales pods on CPU |
+| Resource | Name | File |
+|----------|------|------|
+| Deployment | `task-manager-deployment` | `k8s/deployment.yaml` |
+| Service | `task-manager-service` | `k8s/service.yaml` |
+| Ingress | `task-manager-ingress` | `k8s/ingress.yaml` |
+| HPA | `task-manager-hpa` | `k8s/hpa.yaml` |
 
 ---
 
@@ -213,6 +249,204 @@ Now: 6 pods on 3 nodes
 
 ---
 
+## Testing Guide
+
+### 1. Basic Health Check
+
+```bash
+# Test HTTP
+curl http://api.iac-epitech.com/health
+# Expected: {"status": "healthy"} or similar
+
+# Test HTTPS
+curl https://api.iac-epitech.com/health
+```
+
+### 2. Check Current State
+
+```bash
+# See all running pods
+kubectl get pods
+# Expected: 2+ pods with STATUS: Running, READY: 1/1
+
+# Check HPA status
+kubectl get hpa
+# Shows: MINPODS, MAXPODS, REPLICAS, CPU%
+
+# Check ingress (should have IP assigned)
+kubectl get ingress
+# ADDRESS should be: 136.110.177.86
+```
+
+### 3. Load Testing (Autoscaling Demo)
+
+This demonstrates that autoscaling works. Run this to generate traffic and watch pods scale up.
+
+**Terminal 1 - Watch pods:**
+```bash
+kubectl get pods --watch
+```
+
+**Terminal 2 - Watch HPA:**
+```bash
+kubectl get hpa --watch
+```
+
+**Terminal 3 - Generate load:**
+```bash
+# Install hey if needed: brew install hey
+
+# Send 5000 requests with 100 concurrent connections
+hey -n 5000 -c 100 http://api.iac-epitech.com/health
+```
+
+**Expected behavior:**
+1. CPU% in HPA increases above 70%
+2. REPLICAS increases from 2 to 3, 4, 5...
+3. New pods appear in `kubectl get pods --watch`
+4. After load stops, wait 5 minutes, pods scale back down
+
+### 4. Test Pod Resilience
+
+```bash
+# Delete a pod manually
+kubectl delete pod <pod-name>
+
+# Watch it get recreated automatically
+kubectl get pods --watch
+# Kubernetes immediately creates a replacement
+```
+
+### 5. Check Logs
+
+```bash
+# All pods combined
+kubectl logs -l app=task-manager --tail=50
+
+# Specific pod
+kubectl logs <pod-name>
+
+# Follow logs live
+kubectl logs -l app=task-manager -f
+```
+
+### 6. Describe Resources (Debugging)
+
+```bash
+# Detailed pod info (events, errors)
+kubectl describe pod <pod-name>
+
+# Detailed ingress info
+kubectl describe ingress task-manager-ingress
+
+# Detailed HPA info
+kubectl describe hpa task-manager-hpa
+```
+
+---
+
+## Updating the Application
+
+When your friend merges their app code, follow these steps to deploy the new version.
+
+### Step 1: Rebase/Merge the Branch
+
+```bash
+# Fetch latest changes
+git fetch origin
+
+# Rebase from your friend's branch
+git rebase origin/<his-branch-name>
+# OR merge
+git merge origin/<his-branch-name>
+
+# Resolve any conflicts if needed
+```
+
+### Step 2: Check What Changed
+
+Look at these files that might affect deployment:
+
+| File | What to Check |
+|------|---------------|
+| `app/requirements.txt` | New Python dependencies? |
+| `app/Dockerfile` | Build process changes? |
+| `k8s/deployment.yaml` | New env vars? Different port? |
+
+### Step 3: Rebuild and Push Docker Image
+
+```bash
+cd app/
+
+# Build for linux/amd64 (GKE requires this)
+docker buildx build --platform linux/amd64 \
+  -t europe-west1-docker.pkg.dev/iac-epitech-dev/perth-repo/task-manager:latest \
+  --push .
+```
+
+### Step 4: Deploy to Kubernetes
+
+```bash
+# Restart deployment to pull new image
+kubectl rollout restart deployment task-manager-deployment
+
+# Watch the rollout
+kubectl rollout status deployment task-manager-deployment
+
+# Verify pods are running
+kubectl get pods
+```
+
+### Step 5: Verify Deployment
+
+```bash
+# Test the endpoints
+curl https://api.iac-epitech.com/health
+
+# Check logs for errors
+kubectl logs -l app=task-manager --tail=50
+```
+
+### Common Issues When Updating
+
+**Image pull error (403 Forbidden):**
+```bash
+# Grant permission to GKE service account
+gcloud projects add-iam-policy-binding iac-epitech-dev \
+  --member="serviceAccount:gke-node-sa@iac-epitech-dev.iam.gserviceaccount.com" \
+  --role="roles/artifactregistry.reader"
+```
+
+**Pod crash (CrashLoopBackOff):**
+```bash
+# Check logs for error
+kubectl logs <pod-name>
+
+# Common causes:
+# - Missing environment variables in deployment.yaml
+# - Missing Python dependencies in requirements.txt
+# - App listening on wrong port (must be 8080)
+```
+
+**Wrong architecture (exec format error):**
+```bash
+# You built for ARM instead of AMD64
+# Rebuild with --platform linux/amd64
+docker buildx build --platform linux/amd64 ...
+```
+
+### Rollback If Something Breaks
+
+```bash
+# Rollback to previous version
+kubectl rollout undo deployment task-manager-deployment
+
+# Check rollback status
+kubectl rollout status deployment task-manager-deployment
+```
+
+---
+
 ## File Structure
 
 ```
@@ -260,33 +494,53 @@ perth/
 
 ---
 
-## Key Concepts Explained
+## Key Concepts
 
-### For Non-Technical Teammates
+### Kubernetes Architecture
 
-| Term | Simple Explanation |
-|------|-------------------|
-| **Load Balancer** | Traffic cop that directs visitors to available servers |
-| **Pod** | One running copy of our app (like one chef in a kitchen) |
-| **Node** | A computer that runs pods (like a kitchen workstation) |
-| **HPA** | Manager that hires more chefs when restaurant is busy |
-| **Cluster Autoscaler** | Manager that adds more workstations when needed |
-| **Ingress** | The restaurant entrance that routes customers |
-| **Service** | The kitchen door that connects waiters to chefs |
-| **SSL Certificate** | Security badge that proves we're legitimate |
+| Component | What It Does | Our Resource |
+|-----------|--------------|--------------|
+| **Pod** | Smallest deployable unit, runs one container instance | `task-manager-deployment` creates these |
+| **Deployment** | Manages pod replicas, handles updates/rollbacks | `task-manager-deployment` (2-10 replicas) |
+| **Service** | Internal DNS + load balancing between pods | `task-manager-service` (ClusterIP) |
+| **Ingress** | Exposes HTTP/HTTPS routes externally | `task-manager-ingress` |
+| **HPA** | Scales pods based on metrics | `task-manager-hpa` (CPU target: 70%) |
 
-### For Technical Teammates
+### How Components Connect
 
-| Component | Kubernetes Resource | GCP Resource |
-|-----------|--------------------| -------------|
-| External LB | Ingress | HTTP(S) Load Balancer |
-| Internal LB | Service (ClusterIP) | - |
-| App instances | Deployment/Pods | - |
-| Pod scaling | HPA | - |
-| Node scaling | - | Cluster Autoscaler |
-| SSL | Ingress annotation | Managed Certificate |
-| Static IP | Ingress annotation | Global Address |
-| DNS | - | Cloud DNS |
+```
+Internet → Ingress → Service → Pods
+           (L7 LB)   (L4 LB)   (containers)
+```
+
+- **Ingress** creates a Google Cloud HTTP(S) Load Balancer (Layer 7)
+- **Service** does internal load balancing (Layer 4, round-robin)
+- **Pods** run the actual Flask application
+
+### The Three Required Annotations (k8s/ingress.yaml)
+
+```yaml
+annotations:
+  # Links to our reserved static IP
+  kubernetes.io/ingress.global-static-ip-name: "task-manager-static-ip"
+
+  # Links to Google-managed SSL certificate
+  networking.gke.io/managed-certificates: "task-manager-ssl-cert"
+
+  # Alternative way to specify SSL certificate
+  ingress.gcp.kubernetes.io/pre-shared-cert: "task-manager-ssl-cert"
+```
+
+These annotations connect Kubernetes Ingress to GCP resources created by Terraform.
+
+### Resource Mapping
+
+| Kubernetes | GCP Resource Created | Terraform File |
+|------------|---------------------|----------------|
+| Ingress | HTTP(S) Load Balancer | Auto-created by GKE |
+| `global-static-ip-name` annotation | `google_compute_global_address` | `loadbalancer.tf` |
+| `managed-certificates` annotation | `google_compute_managed_ssl_certificate` | `loadbalancer.tf` |
+| Node Pool | Compute Engine VMs | `gke.tf` |
 
 ---
 
@@ -423,7 +677,7 @@ kubectl logs -l app=task-manager --tail=20
 
 ---
 
-## Common Commands
+## Commands Reference
 
 ### Check Status
 
@@ -553,38 +807,51 @@ gcloud compute ssl-certificates describe task-manager-ssl-cert
 
 ## Summary
 
-### What We Built
+### Configuration Values
 
-✅ **Load Balancer** - Routes traffic from internet to our app
-✅ **HPA** - Scales pods (2-10) based on CPU usage
-✅ **Cluster Autoscaler** - Scales nodes (1-5) when needed
-✅ **SSL Certificate** - HTTPS encryption
-✅ **DNS** - Custom domain (api.iac-epitech.com)
-✅ **Docker Image** - Containerized Flask app
-✅ **Kubernetes Manifests** - Declarative infrastructure
+| Parameter | Value | File |
+|-----------|-------|------|
+| Min Pods | 2 | `k8s/hpa.yaml` |
+| Max Pods | 10 | `k8s/hpa.yaml` |
+| Min Nodes | 1 | `infrastructure-loadbalancer/gke.tf` |
+| Max Nodes | 5 | `infrastructure-loadbalancer/gke.tf` |
+| CPU Target | 70% | `k8s/hpa.yaml` |
+| App Port | 8080 | `k8s/deployment.yaml` |
+| Static IP | 136.110.177.86 | `infrastructure-loadbalancer/loadbalancer.tf` |
+| Domain | api.iac-epitech.com | `infrastructure-loadbalancer/dns.tf` |
+| Docker Image | `europe-west1-docker.pkg.dev/iac-epitech-dev/perth-repo/task-manager:latest` | `k8s/deployment.yaml` |
 
-### Key Numbers
+### TL;DR Cheat Sheet
 
-| Metric | Value |
-|--------|-------|
-| Min Pods | 2 |
-| Max Pods | 10 |
-| Min Nodes | 1 |
-| Max Nodes | 5 |
-| CPU Target | 70% |
-| Static IP | 136.110.177.86 |
-| Domain | api.iac-epitech.com |
+```bash
+# Connect to cluster
+gcloud container clusters get-credentials perth-gke-cluster --region europe-west1
 
-### Files Changed/Created
+# Check everything
+kubectl get pods && kubectl get hpa && kubectl get ingress
 
-- 4 new Kubernetes manifests
-- 6 new Terraform files
-- 1 Dockerfile
-- 3 documentation files
-- 2 updated files (.gitignore, requirements.txt)
+# Deploy new app version
+cd app && docker buildx build --platform linux/amd64 -t europe-west1-docker.pkg.dev/iac-epitech-dev/perth-repo/task-manager:latest --push .
+kubectl rollout restart deployment task-manager-deployment
+
+# Test
+curl https://api.iac-epitech.com/health
+
+# Load test
+hey -n 5000 -c 100 http://api.iac-epitech.com/health
+
+# Watch scaling
+kubectl get hpa --watch
+
+# Rollback
+kubectl rollout undo deployment task-manager-deployment
+
+# Logs
+kubectl logs -l app=task-manager --tail=50
+```
 
 ---
 
 *Last updated: January 2026*
-*Author: Antony Jin*
-*Course: Epitech IAC C7*
+*Branch: Antonyjin/loadbalancer-setup*
+*PR: https://github.com/tzhengtek/InfrastructureAsCode/pull/5*
