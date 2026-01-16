@@ -4,13 +4,6 @@ resource "kubernetes_namespace_v1" "arc_runners" {
     name = "arc-runners"
   }
 }
-
-# USE GOOGLE SECRET
-# data "google_secret_manager_secret_version" "github_repo_token" {
-#   secret  = var.github_repo_token
-#   version = "latest"
-# }
-
 resource "helm_release" "arc_controller" {
   name             = "arc-system"
   repository       = "oci://ghcr.io/actions/actions-runner-controller-charts"
@@ -18,14 +11,14 @@ resource "helm_release" "arc_controller" {
   version          = "0.9.0"
   namespace        = "arc-systems"
   create_namespace = true
-
 }
 
-# USE GOOGLE SECRET
-# data "google_secret_manager_secret_version" "github_repo_token" {
-#   secret  = var.github_repo_token
-#   version = "latest"
-# }
+# Fetch GitHub token from Secret Manager
+# The token is stored in Secret Manager by infrastructure/secret.tf
+data "google_secret_manager_secret_version" "github_repo_token" {
+  secret  = "github-repo-token"
+  version = "latest"
+}
 
 resource "kubernetes_secret_v1" "github_secret" {
   metadata {
@@ -34,12 +27,12 @@ resource "kubernetes_secret_v1" "github_secret" {
   }
 
   data = {
-    github_token = var.github_repo_token
+    github_token = data.google_secret_manager_secret_version.github_repo_token.secret_data
   }
 }
 
 resource "helm_release" "arc_runner_set" {
-  name       = "self-hosted-runner"
+  name       = var.arc_runner_name
   repository = "oci://ghcr.io/actions/actions-runner-controller-charts"
   chart      = "gha-runner-scale-set"
   version    = "0.9.0"
@@ -57,14 +50,21 @@ resource "helm_release" "arc_runner_set" {
   }
 
   set {
-    name  = "template.spec.containers[0].command[0]"
-    value = "/home/runner/run.sh"
-  }
-
-  set {
     name  = "githubConfigSecret"
     value = kubernetes_secret_v1.github_secret.metadata[0].name
   }
+
+  # Set custom runner labels so workflows can target them
+  set {
+    name  = "runnerGroup"
+    value = "default"
+  }
+
+  set {
+    name  = "runnerScaleSetName"
+    value = var.arc_runner_name
+  }
+
   # 1. Point to your Custom Image in Artifact Registry
   set {
     name  = "template.spec.containers[0].image"
@@ -74,5 +74,26 @@ resource "helm_release" "arc_runner_set" {
   set {
     name  = "template.spec.containers[0].imagePullPolicy"
     value = "Always"
+  }
+
+  set {
+    name  = "template.spec.tolerations[0].key"
+    value = "dedicated"
+  }
+  set {
+    name  = "template.spec.tolerations[0].operator"
+    value = "Equal"
+  }
+  set {
+    name  = "template.spec.tolerations[0].value"
+    value = "runner"
+  }
+  set {
+    name  = "template.spec.tolerations[0].effect"
+    value = "NoSchedule"
+  }
+  set {
+    name  = "template.spec.nodeSelector.workload-type"
+    value = "runner"
   }
 }

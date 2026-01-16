@@ -5,6 +5,7 @@ FROM ghcr.io/actions/actions-runner:latest
 USER root
 
 # Install common CI/CD tools
+# Added dumb-init here (CRITICAL for container survival)
 RUN apt-get update && apt-get install -y \
     curl \
     wget \
@@ -14,6 +15,7 @@ RUN apt-get update && apt-get install -y \
     apt-transport-https \
     ca-certificates \
     software-properties-common \
+    dumb-init \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Docker CLI (for Docker-in-Docker workflows)
@@ -53,8 +55,22 @@ RUN apt-get update && apt-get install -y \
     python3-pip \
     && rm -rf /var/lib/apt/lists/*
 
+# --- FIX START ---
+
+# Ensure the runner user owns their home directory again
+# (Running as root often changes ownership of config files, causing permission denied crashes)
+RUN chown -R runner:runner /home/runner
+
 # Switch back to runner user for security
 USER runner
 
 # Set working directory
 WORKDIR /home/runner
+
+# OVERRIDE ENTRYPOINT
+# This prevents the container from printing "Usage:..." and exiting immediately.
+# It allows the Scale Set Controller to inject the startup command correctly.
+ENTRYPOINT ["/usr/bin/dumb-init", "--"]
+CMD ["/home/runner/run.sh"]
+
+# --- FIX END ---
