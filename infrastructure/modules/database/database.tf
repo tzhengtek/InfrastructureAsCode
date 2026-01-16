@@ -47,4 +47,16 @@ resource "google_sql_user" "database_user" {
   password = var.db_pwd
 }
 
+# # Add service account as Cloud SQL IAM user for instance-level access
+# # This grants the service account the necessary permissions to get instance metadata
+# # and connect via Cloud SQL Proxy
+# # Note: Cloud SQL requires the service account email WITHOUT the .gserviceaccount.com suffix
+# resource "google_sql_user" "app_pool_sa" {
+#   count = var.app_pool_service_account_email != "" ? 1 : 0
+
+#   name     = replace(var.app_pool_service_account_email, ".gserviceaccount.com", "")
+#   instance = google_sql_database_instance.database_instance.name
+#   type     = "CLOUD_IAM_SERVICE_ACCOUNT"
+# }
+
 

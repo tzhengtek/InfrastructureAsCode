@@ -7,6 +7,8 @@
 
 local.tfvars
 
+
+scripts/
 # Crash log files
 crash.log
 crash.*.log

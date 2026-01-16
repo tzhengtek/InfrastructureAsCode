@@ -111,3 +111,20 @@ variable "deletion_protection" {
   description = "Deletion protection state"
   type        = bool
 }
+
+variable "app_name" {
+  description = "Application name"
+  type        = string
+}
+
+
+
+variable "app_pool_sa" {
+  description = "App Pool Service Account"
+  type        = string
+}
+
+variable "app_pool_sa_roles" {
+  description = "App Pool Service Account Roles"
+  type        = list(string)
+}

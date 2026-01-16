@@ -1,4 +1,9 @@
 // DATABASE //
+variable "project_id" {
+  type        = string
+  description = "GCP Project ID"
+}
+
 variable "region" {
   type        = string
   description = "Region for resources"
@@ -20,12 +25,6 @@ variable "vpc" {
   type        = any
 }
 
-variable "db_name" {
-  type        = string
-  description = "Name of the database"
-  default     = "app-db"
-}
-
 variable "db_user" {
   type        = string
   description = "Database user name"
@@ -41,4 +40,10 @@ variable "db_pwd" {
 variable "deletion_protection" {
   description = "Deletion protection state"
   type        = bool
+}
+
+variable "app_pool_service_account_email" {
+  type        = string
+  description = "Service account email for application pool nodes (for Cloud SQL Proxy access)"
+  default     = ""
 }
