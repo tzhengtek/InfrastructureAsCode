@@ -1,5 +1,9 @@
 resource "google_project_service" "secretmanager" {
   service = "secretmanager.googleapis.com"
+
+  disable_dependent_services = true
+
+  disable_on_destroy = false
 }
 
 resource "google_secret_manager_secret" "jwt_secret" {

@@ -35,31 +35,49 @@ on:
           - ubuntu-latest
 
 jobs:
-  # Build image when needed:
-  # 1. Using ubuntu-latest runner (bootstrap mode or explicit selection)
-  # 2. Dockerfile was modified
   build-and-push:
+    # Run if: Manual Ubuntu selected OR Bootstrap mode OR Push event OR Tag
     if: |
       inputs.runner_type == 'ubuntu-latest' || 
-      (vars.USE_SELF_HOSTED_RUNNERS != 'true' && github.event_name != 'workflow_dispatch') ||
-      contains(github.event.head_commit.modified, 'Dockerfile')
+      vars.USE_SELF_HOSTED_RUNNERS != 'true' ||
+      github.event_name == 'push' ||
+      startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
     permissions:
       contents: read
       id-token: write
+    outputs:
+      image_exists: ${{ steps.check-image.outputs.exists }}
+      dockerfile_changed: ${{ steps.changes.outputs.dockerfile }}
     steps:
       - uses: actions/checkout@v4
+
+      - uses: dorny/paths-filter@v3
+        id: changes
+        with:
+          filters: |
+            dockerfile:
+              - 'Dockerfile'
+
       - uses: google-github-actions/auth@v3
         with:
           workload_identity_provider: "projects/${{ secrets.GCP_PROJECT_NUMBER }}/locations/global/workloadIdentityPools/github-action-wif-pool/providers/github-oidc"
           service_account: "github-action-sa@${{ secrets.GCP_PROJECT_ID }}.iam.gserviceaccount.com"
 
-      - name: Build and Push
+      - name: Check if image exists
+        id: check-image
         run: |
-          # 1. Configure Docker
-          gcloud auth configure-docker europe-west1-docker.pkg.dev --quiet
+          IMAGE="europe-west1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/github-runners/runner:latest"
+          if gcloud artifacts docker images describe $IMAGE --quiet 2>/dev/null; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
 
-          # 2. Build & Push
+      - name: Build and Push
+        if: steps.check-image.outputs.exists != 'true' || steps.changes.outputs.dockerfile == 'true'
+        run: |
+          gcloud auth configure-docker europe-west1-docker.pkg.dev --quiet
           IMAGE="europe-west1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/github-runners/runner:latest"
           docker build -t $IMAGE .
           docker push $IMAGE
@@ -67,11 +85,8 @@ jobs:
   terraform-infrastructure:
     name: Terraform
     needs: build-and-push
+    # Wait for build (success) OR run if build was skipped entirely
     if: ${{ always() && (needs.build-and-push.result == 'success' || needs.build-and-push.result == 'skipped') }}
-    # Auto-select runner based on context:
-    # 1. Manual trigger: use selected runner_type
-    # 2. Auto trigger (push/PR): use vars.USE_SELF_HOSTED_RUNNERS to decide
-    #    - Set repository variable USE_SELF_HOSTED_RUNNERS=true after bootstrap
     runs-on: ${{ inputs.runner_type || (vars.USE_SELF_HOSTED_RUNNERS == 'true' && 'self-hosted-runner' || 'ubuntu-latest') }}
     permissions:
       contents: read
@@ -111,10 +126,10 @@ jobs:
           terraform validate
 
       - name: Terraform Plan (Cluster & Database)
-        run: terraform plan -var-file=vars/${{ matrix.env }}.tfvars -target=module.cluster -target=module.database
+        run: terraform plan -var-file=vars/${{ matrix.env }}.tfvars -target=module.cluster
 
       - name: Terraform Apply (Cluster & Database)  (on tag only)
-        run: terraform apply -auto-approve -var-file=vars/${{ matrix.env }}.tfvars -target=module.cluster -target=module.database
+        run: terraform apply -auto-approve -var-file=vars/${{ matrix.env }}.tfvars -target=module.cluster
 
       - name: Terraform Plan
         run: terraform plan -var-file=vars/${{ matrix.env }}.tfvars
