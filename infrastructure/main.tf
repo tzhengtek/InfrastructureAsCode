@@ -15,6 +15,12 @@ resource "google_project_service" "networking_api" {
   disable_on_destroy = false
 }
 
+resource "google_project_service" "compute_api" {
+  project            = var.project_id
+  service            = "compute.googleapis.com"
+  disable_on_destroy = false
+}
+
 module "cluster" {
   source = "./modules/cluster"
 

@@ -128,12 +128,6 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/')
         run: terraform apply -auto-approve -var-file=vars/${{ matrix.env }}.tfvars
 
-      - name: Wait for Self-Hosted Runners to be Ready
-        if: startsWith(github.ref, 'refs/tags/')
-        run: |
-          echo "Waiting for self-hosted runners to register with GitHub..."
-          sleep 60
-
       - name: Enable Self-Hosted Runners (after successful deployment)
         if: |
           startsWith(github.ref, 'refs/tags/') && 
