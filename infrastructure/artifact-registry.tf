@@ -1,11 +1,3 @@
-# Enable Artifact Registry API
-resource "google_project_service" "artifactregistry" {
-  service                    = "artifactregistry.googleapis.com"
-  disable_dependent_services = true
-
-  disable_on_destroy = false
-}
-
 resource "google_artifact_registry_repository" "runners" {
   location      = var.region
   repository_id = "github-runners"
