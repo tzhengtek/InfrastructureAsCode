@@ -1,9 +1,3 @@
-# Enable Artifact Registry API
-resource "google_project_service" "artifactregistry" {
-  service            = "artifactregistry.googleapis.com"
-  disable_on_destroy = false
-}
-
 resource "google_artifact_registry_repository" "runners" {
   location      = var.region
   repository_id = "github-runners"
@@ -15,7 +9,7 @@ resource "google_artifact_registry_repository" "runners" {
     purpose    = "ci-cd"
   }
 
-  depends_on = [google_project_service.artifactregistry]
+  depends_on = [google_project_service.artifact_api]
 }
 
 # Output the registry URL

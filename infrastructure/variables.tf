@@ -71,6 +71,7 @@ variable "ssl_key" {
   sensitive   = true
 }
 
+
 // REPO GITHUB
 
 variable "github_repo_token" {
@@ -104,4 +105,9 @@ variable "runner_pool_sa_roles" {
 variable "arc_runner_name" {
   description = "Runner Kubernetes cluster"
   type        = string
+}
+
+variable "deletion_protection" {
+  description = "Deletion protection state"
+  type        = bool
 }

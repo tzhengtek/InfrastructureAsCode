@@ -38,3 +38,7 @@ variable "db_pwd" {
   sensitive   = true
 }
 
+variable "deletion_protection" {
+  description = "Deletion protection state"
+  type        = bool
+}
