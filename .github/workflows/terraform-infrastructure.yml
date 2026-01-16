@@ -87,6 +87,7 @@ jobs:
     permissions:
       contents: read
       id-token: write
+      actions: write
     env:
       TF_VAR_jwt_secret: ${{ secrets.JWT_SECRET }}
       TF_VAR_ssl_cert: ${{ secrets.SSL_CERT }}
@@ -146,4 +147,4 @@ jobs:
             echo "   Or via Settings → Secrets and variables → Actions → Variables"
           fi
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.REPO_TOKEN }}
