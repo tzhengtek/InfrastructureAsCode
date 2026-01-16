@@ -121,12 +121,6 @@ jobs:
           terraform fmt -check -recursive
           terraform validate
 
-      - name: Terraform Plan (Cluster & Database)
-        run: terraform plan -var-file=vars/${{ matrix.env }}.tfvars -target=module.cluster
-
-      - name: Terraform Apply (Cluster & Database)  (on tag only)
-        run: terraform apply -auto-approve -var-file=vars/${{ matrix.env }}.tfvars -target=module.cluster
-
       - name: Terraform Plan
         run: terraform plan -var-file=vars/${{ matrix.env }}.tfvars
 
