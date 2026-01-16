@@ -9,7 +9,7 @@ resource "google_artifact_registry_repository" "runners" {
     purpose    = "ci-cd"
   }
 
-  depends_on = [google_project_service.artifactregistry]
+  depends_on = [google_project_service.artifact_api]
 }
 
 # Output the registry URL
