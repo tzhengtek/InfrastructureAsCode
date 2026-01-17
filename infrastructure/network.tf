@@ -33,6 +33,8 @@ resource "google_service_networking_connection" "private_vpc_connection" {
 resource "google_compute_firewall" "allow_gke_master_to_nodes" {
   name = "allow-gke-master-to-nodes"
 
+  project = var.project_id
+
   network = google_compute_network.vpc.name
 
   description = "Allow GKE master to communicate with nodes for kubectl logs/exec"
