@@ -4,11 +4,6 @@ resource "google_project_service" "container_api" {
   disable_on_destroy = false
 }
 
-resource "google_project_service" "artifact_api" {
-  project            = var.project_id
-  service            = "artifactregistry.googleapis.com"
-  disable_on_destroy = false
-}
 resource "google_project_service" "networking_api" {
   project            = var.project_id
   service            = "servicenetworking.googleapis.com"
@@ -59,8 +54,7 @@ module "runners" {
 
   depends_on = [
     module.cluster,
-    google_artifact_registry_repository.runners,
-    google_project_service.artifact_api
+    google_artifact_registry_repository.runners
   ]
 }
 

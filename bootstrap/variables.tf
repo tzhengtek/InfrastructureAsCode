@@ -35,3 +35,9 @@ variable "github_action_sa_roles" {
   default     = []
   description = "List of GitHub Actions IAM Policies"
 }
+
+
+variable "app_name" {
+  description = "Application name"
+  type        = string
+}

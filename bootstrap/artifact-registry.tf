@@ -1,3 +1,10 @@
+
+resource "google_project_service" "artifact_api" {
+  project            = var.project_id
+  service            = "artifactregistry.googleapis.com"
+  disable_on_destroy = false
+}
+
 resource "google_artifact_registry_repository" "runners" {
   location      = var.region
   repository_id = "github-runners"
