@@ -12,11 +12,11 @@ apiVersion: v1
 kind: Service
 metadata:
   # Name of the service (referenced by Ingress)
-  name: task-manager-service
+  name: app-service
 
   # Labels for organization
   labels:
-    app: task-manager
+    app: app
     environment: dev
 
 spec:
@@ -32,16 +32,16 @@ spec:
   # ------------------------------------------------------------------------------
   # Must match the labels in deployment.yaml
   selector:
-    app: task-manager
+    app: app
 
   # ------------------------------------------------------------------------------
   # Ports configuration
   # ------------------------------------------------------------------------------
   ports:
-  - name: http
-    protocol: TCP
-    port: 80           # Port the service listens on (what Ingress connects to)
-    targetPort: 8080   # Port your Flask app listens on (inside pod)
+    - name: http
+      protocol: TCP
+      port: 80 # Port the service listens on (what Ingress connects to)
+      targetPort: 8080 # Port your Flask app listens on (inside pod)
 
   # ------------------------------------------------------------------------------
   # Session affinity (optional)

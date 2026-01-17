@@ -54,3 +54,19 @@ variable "jwt_secret" {
   description = "JWT secret for authentication"
   sensitive   = true
 }
+
+# Load Balancer & Ingress
+variable "static_ip_name" {
+  type        = string
+  description = "Name of the static IP for the load balancer"
+}
+
+variable "ssl_cert_name" {
+  type        = string
+  description = "Name of the managed SSL certificate"
+}
+
+variable "domain_name" {
+  type        = string
+  description = "Domain name for the application"
+}

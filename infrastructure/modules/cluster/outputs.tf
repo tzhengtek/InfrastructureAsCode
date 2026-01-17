@@ -16,3 +16,8 @@ output "app_pool_service_account_email" {
   value       = google_service_account.app_pool_nodes.email
   description = "Service account email for application pool nodes"
 }
+
+output "cluster_id" {
+  value       = google_container_cluster.primary.id
+  description = "The cluster ID used to construct node tags"
+}

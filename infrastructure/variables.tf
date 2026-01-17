@@ -127,6 +127,8 @@ variable "app_pool_sa" {
 variable "app_pool_sa_roles" {
   description = "App Pool Service Account Roles"
   type        = list(string)
+}
+
 // LOAD BALANCER & DNS //
 variable "domain_name" {
   type        = string

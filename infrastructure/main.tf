@@ -21,6 +21,12 @@ resource "google_project_service" "compute_api" {
   disable_on_destroy = false
 }
 
+resource "google_project_service" "dns_api" {
+  project            = var.project_id
+  service            = "dns.googleapis.com"
+  disable_on_destroy = false
+}
+
 module "cluster" {
   source = "./modules/cluster"
 
@@ -34,8 +40,11 @@ module "cluster" {
   app_pool_sa          = var.app_pool_sa
   app_pool_sa_roles    = var.app_pool_sa_roles
   deletion_protection  = var.deletion_protection
+  subnet_name          = google_compute_subnetwork.subnet.name
+  vpc_name             = google_compute_network.vpc.name
 
-  depends_on = [google_project_service.container_api]
+  depends_on = [google_service_networking_connection.private_vpc_connection,
+  google_project_service.networking_api, google_project_service.container_api]
 }
 
 module "runners" {
@@ -90,9 +99,14 @@ module "app" {
 
   jwt_secret = var.jwt_secret
 
+  static_ip_name = google_compute_global_address.app_ip.name
+  ssl_cert_name  = "app-cert"
+  domain_name    = var.domain_name
+
   depends_on = [
     module.cluster,
     module.database,
-    google_artifact_registry_repository.app
+    google_artifact_registry_repository.app,
+    google_compute_global_address.app_ip
   ]
 }

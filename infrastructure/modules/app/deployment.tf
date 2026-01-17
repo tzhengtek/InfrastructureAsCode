@@ -15,7 +15,7 @@ resource "kubernetes_config_map_v1" "app" {
     DB_NAME            = var.db_name
     DB_USER            = var.db_user
     DB_CONNECTION_NAME = var.db_connection_name
-    DB_HOST            = "localhost" # Cloud SQL Proxy runs on localhost:5432
+    DB_HOST            = "127.0.0.1"
   }
 }
 
@@ -68,13 +68,6 @@ resource "kubernetes_deployment_v1" "app" {
           workload-type = "application"
         }
 
-        # Toleration required to land on the application node pool
-        toleration {
-          key      = "dedicated"
-          operator = "Equal"
-          value    = "application"
-          effect   = "NoSchedule"
-        }
 
         # Cloud SQL Proxy sidecar container
         container {
@@ -83,6 +76,7 @@ resource "kubernetes_deployment_v1" "app" {
           args = [
             "--port=5432",
             "--address=0.0.0.0",
+            "--private-ip",
             var.db_connection_name
           ]
           security_context {
@@ -186,13 +180,17 @@ resource "kubernetes_deployment_v1" "app" {
   }
 }
 
-# Service
+# Service - NodePort for GCE Ingress compatibility
 resource "kubernetes_service_v1" "app" {
   metadata {
     name      = var.app_name
     namespace = kubernetes_namespace_v1.app.metadata[0].name
     labels = {
       app = var.app_name
+    }
+    annotations = {
+      # Enable container-native load balancing for better performance
+      "cloud.google.com/neg" = jsonencode({ ingress = true })
     }
   }
 
@@ -208,6 +206,103 @@ resource "kubernetes_service_v1" "app" {
       name        = "http"
     }
 
-    type = "ClusterIP"
+    type = "NodePort"
+  }
+}
+
+# ==============================================================================
+# FRONTEND CONFIG - HTTP to HTTPS redirect
+# ==============================================================================
+resource "kubernetes_manifest" "frontend_config" {
+  manifest = {
+    apiVersion = "networking.gke.io/v1beta1"
+    kind       = "FrontendConfig"
+    metadata = {
+      name      = "${var.app_name}-frontend-config"
+      namespace = kubernetes_namespace_v1.app.metadata[0].name
+    }
+    spec = {
+      redirectToHttps = {
+        enabled          = true
+        responseCodeName = "MOVED_PERMANENTLY_DEFAULT"
+      }
+    }
+  }
+}
+
+# ==============================================================================
+# INGRESS - Routes external traffic to your app
+# ==============================================================================
+resource "kubernetes_ingress_v1" "app" {
+  metadata {
+    name      = "${var.app_name}-ingress"
+    namespace = kubernetes_namespace_v1.app.metadata[0].name
+
+    annotations = {
+      # Use the GCE Ingress controller (Google's L7 Load Balancer)
+      "kubernetes.io/ingress.class" = "gce"
+
+      # Use the static IP we reserved
+      "kubernetes.io/ingress.global-static-ip-name" = var.static_ip_name
+
+      # Use the managed SSL certificate
+      "networking.gke.io/managed-certificates" = var.ssl_cert_name
+
+      # Allow HTTP (will be redirected to HTTPS by FrontendConfig)
+      "kubernetes.io/ingress.allow-http" = "true"
+
+      # Use the FrontendConfig for HTTP->HTTPS redirect
+      "networking.gke.io/v1beta1.FrontendConfig" = "${var.app_name}-frontend-config"
+    }
+  }
+
+  depends_on = [kubernetes_manifest.frontend_config]
+
+  spec {
+    # Default backend - all traffic goes to our app
+    default_backend {
+      service {
+        name = kubernetes_service_v1.app.metadata[0].name
+        port {
+          number = 80
+        }
+      }
+    }
+
+    # Rule for your domain
+    rule {
+      host = var.domain_name
+
+      http {
+        path {
+          path      = "/*"
+          path_type = "ImplementationSpecific"
+
+          backend {
+            service {
+              name = kubernetes_service_v1.app.metadata[0].name
+              port {
+                number = 80
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+# Managed Certificate resource for GKE
+resource "kubernetes_manifest" "managed_certificate" {
+  manifest = {
+    apiVersion = "networking.gke.io/v1"
+    kind       = "ManagedCertificate"
+    metadata = {
+      name      = var.ssl_cert_name
+      namespace = kubernetes_namespace_v1.app.metadata[0].name
+    }
+    spec = {
+      domains = [var.domain_name]
+    }
   }
 }

@@ -32,13 +32,6 @@ resource "google_container_node_pool" "application_pool" {
       workload-type = "application"
     }
 
-    # Taint to ensure only application workloads with matching toleration run here
-    taint {
-      key    = "dedicated"
-      value  = "application"
-      effect = "NO_SCHEDULE"
-    }
-
     oauth_scopes = [
       "https://www.googleapis.com/auth/cloud-platform"
     ]

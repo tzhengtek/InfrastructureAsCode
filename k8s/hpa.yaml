@@ -11,11 +11,11 @@ apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
   # Name of the autoscaler
-  name: task-manager-hpa
+  name: app-hpa
 
   # Labels for organization
   labels:
-    app: task-manager
+    app: app
     environment: dev
 
 spec:
@@ -25,30 +25,30 @@ spec:
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
-    name: task-manager-deployment  # Must match deployment.yaml name
+    name: app-deployment # Must match deployment.yaml name
 
   # ------------------------------------------------------------------------------
   # Minimum and maximum number of pods
   # ------------------------------------------------------------------------------
-  minReplicas: 2   # Never go below 2 pods (redundancy + avoid cold start)
-  maxReplicas: 10  # Never go above 10 pods (cost control)
+  minReplicas: 2 # Never go below 2 pods (redundancy + avoid cold start)
+  maxReplicas: 10 # Never go above 10 pods (cost control)
 
   # ------------------------------------------------------------------------------
   # Scaling metrics - WHEN to scale
   # ------------------------------------------------------------------------------
   metrics:
-  # Scale based on CPU usage
-  - type: Resource
-    resource:
-      name: cpu
-      target:
-        type: Utilization
-        averageUtilization: 70  # Target 70% CPU usage
+    # Scale based on CPU usage
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70 # Target 70% CPU usage
 
-        # How this works:
-        # - If average CPU across all pods > 70% → Add more pods
-        # - If average CPU across all pods < 70% → Remove pods
-        # - Always stay between minReplicas (2) and maxReplicas (10)
+          # How this works:
+          # - If average CPU across all pods > 70% → Add more pods
+          # - If average CPU across all pods < 70% → Remove pods
+          # - Always stay between minReplicas (2) and maxReplicas (10)
 
   # You can add more metrics (optional)
   # - type: Resource
@@ -64,26 +64,28 @@ spec:
   behavior:
     # Scale UP behavior (adding pods)
     scaleUp:
-      stabilizationWindowSeconds: 0  # Scale up immediately (no delay)
+      stabilizationWindowSeconds: 0 # Scale up immediately (no delay)
       policies:
-      - type: Percent
-        value: 100           # Can double the number of pods
-        periodSeconds: 15    # Every 15 seconds
-      - type: Pods
-        value: 2             # Or add 2 pods at a time
-        periodSeconds: 15    # Every 15 seconds
-      selectPolicy: Max      # Use whichever policy adds more pods
+        - type: Percent
+          value: 100 # Can double the number of pods
+          periodSeconds: 15 # Every 15 seconds
+        - type: Pods
+          value: 2 # Or add 2 pods at a time
+          periodSeconds: 15 # Every 15 seconds
+      selectPolicy: Max # Use whichever policy adds more pods
 
     # Scale DOWN behavior (removing pods)
     scaleDown:
-      stabilizationWindowSeconds: 300  # Wait 5 minutes before scaling down
-                                       # (avoid flapping - up/down/up/down)
+      stabilizationWindowSeconds:
+        300 # Wait 5 minutes before scaling down
+        # (avoid flapping - up/down/up/down)
       policies:
-      - type: Percent
-        value: 50            # Remove at most 50% of pods
-        periodSeconds: 15    # Every 15 seconds
-      - type: Pods
-        value: 1             # Or remove 1 pod at a time
-        periodSeconds: 15    # Every 15 seconds
-      selectPolicy: Min      # Use whichever policy removes fewer pods
-                            # (more conservative)
+        - type: Percent
+          value: 50 # Remove at most 50% of pods
+          periodSeconds: 15 # Every 15 seconds
+        - type: Pods
+          value: 1 # Or remove 1 pod at a time
+          periodSeconds: 15 # Every 15 seconds
+      selectPolicy:
+        Min # Use whichever policy removes fewer pods
+        # (more conservative)

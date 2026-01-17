@@ -12,11 +12,11 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   # Name of the ingress
-  name: task-manager-ingress
+  name: app-ingress
 
   # Labels for organization
   labels:
-    app: task-manager
+    app: app
     environment: dev
 
   # ------------------------------------------------------------------------------
@@ -26,15 +26,13 @@ metadata:
   annotations:
     # 1. Use the static IP we created in Terraform
     # This ensures your IP address doesn't change
-    kubernetes.io/ingress.global-static-ip-name: "task-manager-static-ip"
-
-    # 2. Use the managed SSL certificate we created in Terraform
+    kubernetes.io/ingress.global-static-ip-name: "${google_compute_global_address.app_ip.name}" # 2. Use the managed SSL certificate we created in Terraform
     # This enables HTTPS (the padlock icon)
-    networking.gke.io/managed-certificates: "task-manager-ssl-cert"
+    networking.gke.io/managed-certificates: "app-ssl-cert"
 
     # 3. Pre-shared certificate (alternative/additional way to specify SSL)
     # Some GKE versions use this annotation
-    ingress.gcp.kubernetes.io/pre-shared-cert: "task-manager-ssl-cert"
+    ingress.gcp.kubernetes.io/pre-shared-cert: "app-ssl-cert"
 
     # Additional helpful annotations:
 
@@ -49,18 +47,18 @@ spec:
   # Routing rules
   # ------------------------------------------------------------------------------
   rules:
-  # This rule says: "For this domain, route all traffic to task-manager-service"
-  - host: api.iac-epitech.com  # Your actual domain
-    http:
-      paths:
-      # Route all paths (/) to the service
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: task-manager-service  # Must match service.yaml name
-            port:
-              number: 80  # Must match service port
+    # This rule says: "For this domain, route all traffic to app-service"
+    - host: api.iac-epitech.com # Your actual domain
+      http:
+        paths:
+          # Route all paths (/) to the service
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app-service # Must match service.yaml name
+                port:
+                  number: 80 # Must match service port
 
   # ------------------------------------------------------------------------------
   # Default backend (optional but recommended)
@@ -69,6 +67,6 @@ spec:
   # For now, we send everything to the same service
   defaultBackend:
     service:
-      name: task-manager-service
+      name: app-service
       port:
         number: 80
