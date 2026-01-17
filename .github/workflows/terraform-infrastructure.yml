@@ -27,10 +27,16 @@ on:
         options:
           - self-hosted-runner
           - ubuntu-latest
+      build_docker_image:
+        description: "Build and push Docker runner image?"
+        required: false
+        default: false
+        type: boolean
 
 jobs:
   build-and-push:
     if: |
+      inputs.build_docker_image == true ||
       inputs.runner_type == 'ubuntu-latest' || 
       vars.USE_SELF_HOSTED_RUNNERS != 'true' ||
       (github.event_name == 'push' && contains(github.event.head_commit.modified, 'Dockerfile')) ||
