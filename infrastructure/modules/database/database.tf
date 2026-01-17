@@ -3,7 +3,7 @@ resource "random_id" "db_postgree" {
 }
 
 resource "google_sql_database_instance" "database_instance" {
-  name             = "${var.db_name}-db-${random_id.db_postgree.hex}"
+  name             = "${var.db_name}-${random_id.db_postgree.hex}"
   database_version = "POSTGRES_15"
   region           = var.region
 
@@ -39,3 +39,11 @@ resource "google_sql_database" "database" {
   name     = var.db_name
   instance = google_sql_database_instance.database_instance.name
 }
+
+# Create database user
+resource "google_sql_user" "database_user" {
+  name     = var.db_user
+  instance = google_sql_database_instance.database_instance.name
+  password = var.db_pwd
+}
+

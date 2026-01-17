@@ -36,8 +36,27 @@ variable "runner_pool_sa_roles" {
   type        = list(string)
 }
 
+variable "app_pool_sa" {
+  description = "App Pool Service Account"
+  type        = string
+}
+
+variable "app_pool_sa_roles" {
+  description = "App Pool Service Account Roles"
+  type        = list(string)
+}
+
 variable "deletion_protection" {
   description = "Deletion protection state"
   type        = bool
 }
 
+variable "vpc_name" {
+  description = "VPC name"
+  type        = string
+}
+
+variable "subnet_name" {
+  description = "Subnet name"
+  type        = string
+}

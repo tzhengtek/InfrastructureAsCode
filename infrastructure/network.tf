@@ -23,3 +23,28 @@ resource "google_service_networking_connection" "private_vpc_connection" {
   service                 = "servicenetworking.googleapis.com"
   reserved_peering_ranges = [google_compute_global_address.private_ip_address.name]
 }
+resource "google_compute_firewall" "allow_gke_master_to_nodes" {
+  name = "allow-gke-master-to-nodes"
+
+  network = google_compute_network.vpc.name
+
+  description = "Allow GKE master to communicate with nodes for kubectl logs/exec"
+
+  allow {
+    protocol = "tcp"
+    ports    = ["10250", "443", "8443"]
+  }
+
+  source_ranges = ["10.128.0.0/9", "172.16.0.0/28"]
+
+  target_tags = ["gke-${var.cluster_name}-node"]
+}
+
+resource "google_compute_router" "nat_router" {
+  name   = "nat-router"
+  region = var.region
+
+  network = google_compute_network.vpc.name
+
+  description = "Router for Cloud NAT to enable internet access for pods"
+}

@@ -14,5 +14,6 @@ github_action_sa_roles = [
   "roles/iam.serviceAccountUser",
   "roles/artifactregistry.admin",
   "roles/resourcemanager.projectIamAdmin",
-  "roles/serviceusage.serviceUsageAdmin"
+  "roles/serviceusage.serviceUsageAdmin",
+  "roles/dns.admin"
 ]
