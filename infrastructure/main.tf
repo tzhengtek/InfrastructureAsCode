@@ -50,11 +50,11 @@ module "runners" {
   zone              = var.zone
   github_config_url = var.github_config_url
   arc_runner_name   = var.arc_runner_name
-  runner_image_url  = "${var.region}-docker.pkg.dev/${var.project_id}/${google_artifact_registry_repository.runners.repository_id}/runner:latest"
+  runner_image_url  = "${var.region}-docker.pkg.dev/${var.project_id}/${data.google_artifact_registry_repository.runners.repository_id}/runner:latest"
 
   depends_on = [
     module.cluster,
-    google_artifact_registry_repository.runners
+    data.google_artifact_registry_repository.runners
   ]
 }
 
@@ -84,7 +84,7 @@ module "app" {
 
   project_id = var.project_id
 
-  app_image = "${var.region}-docker.pkg.dev/${var.project_id}/${google_artifact_registry_repository.app.repository_id}/flask-app:latest"
+  app_image = "${var.region}-docker.pkg.dev/${var.project_id}/${data.google_artifact_registry_repository.app.repository_id}/flask-app:latest"
 
   db_name            = module.database.database_name
   db_user            = module.database.database_user
@@ -100,7 +100,7 @@ module "app" {
   depends_on = [
     module.cluster,
     module.database,
-    google_artifact_registry_repository.app,
+    data.google_artifact_registry_repository.app,
     google_compute_global_address.app_ip
   ]
 }
