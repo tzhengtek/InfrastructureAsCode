@@ -32,6 +32,14 @@ on:
         required: false
         default: false
         type: boolean
+      terraform_action:
+        description: "Terraform action to perform"
+        required: false
+        default: "plan"
+        type: choice
+        options:
+          - plan
+          - apply
 
 jobs:
   build-and-push:
@@ -124,18 +132,19 @@ jobs:
         run: terraform plan -var-file=vars/${{ inputs.env }}.tfvars -target=module.cluster
 
       - name: Terraform Apply (Cluster)
+        if: inputs.terraform_action == 'apply' || startsWith(github.ref, 'refs/tags/')
         run: terraform apply -auto-approve -var-file=vars/${{ inputs.env }}.tfvars -target=module.cluster
 
       - name: Terraform Plan
         run: terraform plan -var-file=vars/${{ inputs.env }}.tfvars
 
-      - name: Terraform Apply (on tag only)
-        if: startsWith(github.ref, 'refs/tags/')
+      - name: Terraform Apply
+        if: inputs.terraform_action == 'apply' || startsWith(github.ref, 'refs/tags/')
         run: terraform apply -auto-approve -var-file=vars/${{ inputs.env }}.tfvars
 
       - name: Enable Self-Hosted Runners (after successful deployment)
         if: |
-          startsWith(github.ref, 'refs/tags/') && 
+          (inputs.terraform_action == 'apply' || startsWith(github.ref, 'refs/tags/')) &&
           success() && 
           vars.USE_SELF_HOSTED_RUNNERS != 'true'
         run: |
