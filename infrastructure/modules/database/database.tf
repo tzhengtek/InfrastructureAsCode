@@ -39,3 +39,11 @@ resource "google_sql_database" "database" {
   name     = var.db_name
   instance = google_sql_database_instance.database_instance.name
 }
+
+# Create database user
+resource "google_sql_user" "database_user" {
+  name     = var.db_user
+  instance = google_sql_database_instance.database_instance.name
+  password = var.db_pwd
+}
+
