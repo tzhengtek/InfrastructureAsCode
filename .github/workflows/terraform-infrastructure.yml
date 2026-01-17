@@ -1,11 +1,5 @@
 name: Terraform Infrastructure Deployment
 
-# AUTOMATIC RUNNER SELECTION:
-# - First deployment (no USE_SELF_HOSTED_RUNNERS var): Uses ubuntu-latest → Creates self-hosted runners
-# - After deployment: Variable is set automatically → All future runs use self-hosted-runner
-# - Production: Each environment manages its own variable (dev/prd separate)
-# - Manual override: Always available via workflow_dispatch input
-
 on:
   push:
     branches:
