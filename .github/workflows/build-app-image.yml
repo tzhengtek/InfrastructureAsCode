@@ -16,6 +16,7 @@ on:
 
 jobs:
   build-and-push:
+    if: (github.event_name == 'push' && contains(github.event.head_commit.modified, 'Dockerfile')) || (github.event_name == 'pull_request' && contains(github.event.pull_request.changed_files, 'Dockerfile'))
     runs-on: ubuntu-latest
     permissions:
       contents: read
