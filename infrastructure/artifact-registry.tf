@@ -1,9 +1,3 @@
-# Enable Artifact Registry API
-resource "google_project_service" "artifactregistry" {
-  service            = "artifactregistry.googleapis.com"
-  disable_on_destroy = false
-}
-
 resource "google_artifact_registry_repository" "runners" {
   location      = var.region
   repository_id = "github-runners"
@@ -15,7 +9,21 @@ resource "google_artifact_registry_repository" "runners" {
     purpose    = "ci-cd"
   }
 
-  depends_on = [google_project_service.artifactregistry]
+  depends_on = [google_project_service.artifact_api]
+}
+
+resource "google_artifact_registry_repository" "app" {
+  location      = var.region
+  repository_id = "app-images"
+  description   = "Docker repository for application images"
+  format        = "DOCKER"
+
+  labels = {
+    managed_by = "terraform"
+    purpose    = "application"
+  }
+
+  depends_on = [google_project_service.artifact_api]
 }
 
 # Output the registry URL
@@ -29,3 +37,7 @@ output "runner_image_url" {
   description = "Full image URL for the custom runner"
 }
 
+output "app_image_url" {
+  value       = "${var.region}-docker.pkg.dev/${var.project_id}/${google_artifact_registry_repository.app.repository_id}/${var.app_name}:latest"
+  description = "Full image URL for the application"
+}

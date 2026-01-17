@@ -7,18 +7,22 @@ resource "google_sql_database_instance" "database_instance" {
   database_version = "POSTGRES_15"
   region           = var.region
 
-  depends_on = [var.private_vpc_connection]
+  depends_on          = [var.private_vpc_connection]
+  deletion_protection = var.deletion_protection
+
   settings {
     tier              = "db-f1-micro"
     availability_type = "ZONAL"
     disk_size         = 10
     disk_type         = "PD_SSD"
 
+
     backup_configuration {
       enabled                        = true
       start_time                     = "02:00"
       point_in_time_recovery_enabled = true
       transaction_log_retention_days = 2
+
       backup_retention_settings {
         retained_backups = 2
       }
@@ -29,7 +33,6 @@ resource "google_sql_database_instance" "database_instance" {
       private_network = var.vpc.id
     }
   }
-  deletion_protection = false
 }
 
 resource "google_sql_database" "database" {
@@ -43,5 +46,4 @@ resource "google_sql_user" "database_user" {
   instance = google_sql_database_instance.database_instance.name
   password = var.db_pwd
 }
-
 

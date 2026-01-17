@@ -72,6 +72,7 @@ variable "ssl_key" {
   sensitive   = true
 }
 
+
 // REPO GITHUB
 
 variable "github_repo_token" {
@@ -105,6 +106,35 @@ variable "runner_pool_sa_roles" {
 variable "arc_runner_name" {
   description = "Runner Kubernetes cluster"
   type        = string
+}
+
+variable "deletion_protection" {
+  description = "Deletion protection state"
+  type        = bool
+}
+
+variable "app_name" {
+  description = "Application name"
+  type        = string
+}
+
+
+
+variable "app_pool_sa" {
+  description = "App Pool Service Account"
+  type        = string
+}
+
+variable "app_pool_sa_roles" {
+  description = "App Pool Service Account Roles"
+  type        = list(string)
+}
+
+// LOAD BALANCER & DNS //
+variable "domain_name" {
+  type        = string
+  description = "Domain name for the application (e.g., api.yourdomain.com)"
+  default     = "api.iac-epitech.com"
 }
 // OBSERVABILITY //
 

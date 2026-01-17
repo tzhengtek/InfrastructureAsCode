@@ -109,7 +109,7 @@ resource "helm_release" "grafana" {
           apiVersion = 1
           datasources = [
             {
-              # Use Google Cloud Monitoring datasource (stackdriver) 
+              # Use Google Cloud Monitoring datasource (stackdriver)
               # which supports PromQL queries via Managed Prometheus
               name      = "Google Cloud Managed Prometheus"
               type      = "stackdriver"

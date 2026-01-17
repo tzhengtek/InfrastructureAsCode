@@ -11,19 +11,27 @@ resource "google_project_iam_member" "github_action_sa_roles" {
   member   = "serviceAccount:${google_service_account.gke_nodes.email}"
 }
 resource "google_container_node_pool" "runner_pool" {
-  name       = var.runner_pool_name
-  location   = var.zone
-  cluster    = google_container_cluster.primary.name
-  node_count = 1
-
+  name     = var.runner_pool_name
+  location = var.zone
+  cluster  = google_container_cluster.primary.name
+  autoscaling {
+    min_node_count = 0
+    max_node_count = 2
+  }
   node_config {
-    preemptible  = true # Preemptible for cost savings
-    machine_type = "n1-standard-1"
-
+    spot         = true
+    machine_type = "e2-standard-2"
+    disk_size_gb = 30
 
     service_account = google_service_account.gke_nodes.email
     labels = {
       workload-type = "runner"
+    }
+
+    taint {
+      key    = "dedicated"
+      value  = "runner"
+      effect = "NO_SCHEDULE"
     }
 
     oauth_scopes = [

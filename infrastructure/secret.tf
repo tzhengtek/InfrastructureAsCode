@@ -1,5 +1,7 @@
 resource "google_project_service" "secretmanager" {
   service = "secretmanager.googleapis.com"
+
+  disable_on_destroy = false
 }
 
 resource "google_secret_manager_secret" "jwt_secret" {
@@ -72,12 +74,6 @@ resource "google_secret_manager_secret" "db_connection" {
   }
 
   depends_on = [google_project_service.secretmanager]
-}
-
-resource "google_sql_user" "user" {
-  name     = var.db_user
-  instance = module.database.db_instance.name
-  password = var.db_pwd
 }
 
 resource "google_secret_manager_secret_version" "db_connection" {
