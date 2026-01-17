@@ -292,6 +292,10 @@ resource "kubernetes_ingress_v1" "app" {
   }
 }
 
+resource "kubernetes_manifest" "app_hpa" {
+  manifest = yamldecode(file("${path.module}/hpa.yaml"))
+}
+
 # Managed Certificate resource for GKE
 resource "kubernetes_manifest" "managed_certificate" {
   manifest = {

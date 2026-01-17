@@ -60,6 +60,7 @@ variable "jwt_secret" {
   description = "JWT Secret for token generation"
   sensitive   = true
 }
+
 variable "ssl_cert" {
   type        = string
   description = "ssl certificate"
@@ -134,4 +135,17 @@ variable "domain_name" {
   type        = string
   description = "Domain name for the application (e.g., api.yourdomain.com)"
   default     = "api.iac-epitech.com"
+}
+// OBSERVABILITY //
+
+variable "enable_managed_prometheus" {
+  description = "Utiliser GCP Managed Prometheus"
+  type        = bool
+  default     = true
+}
+
+variable "grafana_admin_password" {
+  description = "Mot de passe admin Grafana"
+  type        = string
+  sensitive   = true
 }
