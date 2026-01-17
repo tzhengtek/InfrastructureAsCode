@@ -38,8 +38,15 @@ module "cluster" {
   subnet_name          = google_compute_subnetwork.subnet.name
   vpc_name             = google_compute_network.vpc.name
 
-  depends_on = [google_service_networking_connection.private_vpc_connection,
-  google_project_service.networking_api, google_project_service.container_api]
+  depends_on = [
+    google_service_networking_connection.private_vpc_connection,
+    google_project_service.networking_api,
+    google_project_service.container_api,
+    google_secret_manager_secret_version.jwt_secret,
+    google_secret_manager_secret_version.ssl_cert,
+    google_secret_manager_secret_version.ssl_key,
+    google_secret_manager_secret_version.github_repo_token
+  ]
 }
 
 module "runners" {
@@ -54,7 +61,8 @@ module "runners" {
 
   depends_on = [
     module.cluster,
-    data.google_artifact_registry_repository.runners
+    data.google_artifact_registry_repository.runners,
+    google_secret_manager_secret_version.github_repo_token
   ]
 }
 
@@ -75,7 +83,10 @@ module "database" {
   depends_on = [
     google_service_networking_connection.private_vpc_connection,
     google_project_service.networking_api,
-    module.cluster
+    module.cluster,
+    google_secret_manager_secret_version.jwt_secret,
+    google_secret_manager_secret_version.ssl_cert,
+    google_secret_manager_secret_version.ssl_key
   ]
 }
 
@@ -101,6 +112,10 @@ module "app" {
     module.cluster,
     module.database,
     data.google_artifact_registry_repository.app,
-    google_compute_global_address.app_ip
+    google_compute_global_address.app_ip,
+    google_secret_manager_secret_version.jwt_secret,
+    google_secret_manager_secret_version.ssl_cert,
+    google_secret_manager_secret_version.ssl_key,
+    google_secret_manager_secret_version.db_connection
   ]
 }
