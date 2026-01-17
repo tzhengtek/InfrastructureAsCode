@@ -18,10 +18,17 @@ resource "google_compute_global_address" "private_ip_address" {
   network       = google_compute_network.vpc.id
 }
 
+resource "google_project_service" "service_networking" {
+  service            = "servicenetworking.googleapis.com"
+  disable_on_destroy = false
+}
+
 resource "google_service_networking_connection" "private_vpc_connection" {
   network                 = google_compute_network.vpc.id
   service                 = "servicenetworking.googleapis.com"
   reserved_peering_ranges = [google_compute_global_address.private_ip_address.name]
+
+  depends_on = [google_project_service.service_networking]
 }
 resource "google_compute_firewall" "allow_gke_master_to_nodes" {
   name = "allow-gke-master-to-nodes"
