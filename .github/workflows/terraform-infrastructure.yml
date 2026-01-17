@@ -18,7 +18,7 @@ on:
         type: choice
         options:
           - dev
-          - prd
+          - prod
       runner_type:
         description: "Choose runner type (ubuntu-latest for bootstrap, self-hosted for normal op)"
         required: false
