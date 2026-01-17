@@ -12,7 +12,8 @@ resource "google_compute_global_address" "app_ip" {
 }
 
 resource "google_compute_managed_ssl_certificate" "app_cert" {
-  name = "app-ssl-cert"
+  name    = "app-ssl-cert"
+  project = var.project_id
 
   managed {
     domains = ["api.${var.domain_name}"]
