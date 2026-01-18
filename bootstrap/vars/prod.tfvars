@@ -18,5 +18,6 @@ github_action_sa_roles = [
   "roles/serviceusage.serviceUsageAdmin",
   "roles/dns.admin",
   "roles/servicenetworking.networksAdmin",
-  "roles/compute.networkAdmin"
+  "roles/compute.networkAdmin",
+  "roles/compute.securityAdmin"
 ]
